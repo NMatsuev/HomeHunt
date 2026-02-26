@@ -1,12 +1,6 @@
 export default {
-  languages: {
-    ru: "Русский",
-    en: "Английский",
-    native: {
-      ru: "Русский",
-      en: "English",
-    },
-  },
+  language: "Русский",
+  flag: "🇷🇺",
   common: {
     loading: "Загрузка...",
     error: "Ошибка",
@@ -32,5 +26,11 @@ export default {
     version: "Версия",
     build: "Сборка",
     selectLanguage: "Выберите язык",
+    theme: {
+      light: "Светлая",
+      dark: "Темная",
+      title: "Тема",
+      select: "Выбрать тему",
+    },
   },
 };

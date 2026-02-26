@@ -3,6 +3,7 @@ import * as Font from "expo-font";
 import { useState, useEffect } from "react";
 import CustomTabNavigator from "./components/CustomTabNavigator";
 import { LanguageProvider } from "./i18n/LanguageContext";
+import { ThemeProvider } from "./theme/ThemeContext";
 import {
   useSafeAreaInsets,
   SafeAreaProvider,
@@ -55,7 +56,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <LanguageProvider>
-        <AppContent />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </LanguageProvider>
     </SafeAreaProvider>
   );

@@ -6,15 +6,16 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { useTranslation } from "../i18n/useTranslation";
+import { useLanguage } from "../i18n/LanguageContext";
+import { useTheme } from "../theme/ThemeContext";
 
-// Импорт экранов
 import MainScreen from "./tabs/MainScreen";
 import SavedScreen from "./tabs/SavedScreen";
 import SettingsScreen from "./tabs/SettingsScreen";
 
 function TabNavigatorContent() {
-  const { t, currentLocale } = useTranslation();
+  const { t, locale } = useLanguage();
+  const { themeColors } = useTheme();
   const [activeTab, setActiveTab] = useState("main");
 
   const tabs = [
@@ -36,7 +37,7 @@ function TabNavigatorContent() {
   const renderScreen = () => {
     const activeTabConfig = tabs.find((tab) => tab.key === activeTab);
     const Component = activeTabConfig?.component || MainScreen;
-    return <Component />;
+    return <Component key={`screen-${activeTab}-${locale}`} />;
   };
 
   const TabButton = ({ tab }) => {
@@ -48,18 +49,35 @@ function TabNavigatorContent() {
         onPress={() => setActiveTab(tab.key)}
         activeOpacity={0.7}
       >
-        <Text style={[styles.tabIcon, isActive && styles.activeTabIcon]}>
+        <Text
+          style={[
+            styles.tabIcon,
+            {
+              color: isActive ? themeColors.primary : themeColors.textSecondary,
+            },
+          ]}
+        >
           {tab.icon}
         </Text>
-        <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+        <Text
+          style={[
+            styles.tabText,
+            {
+              color: isActive ? themeColors.primary : themeColors.textSecondary,
+            },
+            isActive && styles.activeTabText,
+          ]}
+        >
           {tab.title}
         </Text>
       </TouchableOpacity>
     );
   };
 
+  const styles = createStyles(themeColors);
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} key={`container-${locale}`}>
       <View style={styles.contentContainer}>{renderScreen()}</View>
 
       <View
@@ -77,49 +95,49 @@ function TabNavigatorContent() {
 }
 
 export default function CustomTabNavigator() {
-  return <TabNavigatorContent />;
+  const { themeColors } = useTheme();
+  // Принудительный перерендер при смене темы через key
+  return <TabNavigatorContent key={`navigator-${themeColors.background}`} />;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  contentContainer: {
-    flex: 1,
-  },
-  tabBar: {
-    flexDirection: "row",
-    height: 60,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -2,
+const createStyles = (colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  tabButton: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tabIcon: {
-    fontSize: 24,
-    marginBottom: 2,
-  },
-  activeTabIcon: {
-    color: "tomato",
-  },
-  tabText: {
-    fontSize: 11,
-    color: "#666",
-    fontFamily: "mt-light",
-  },
-  activeTabText: {
-    color: "tomato",
-    fontFamily: "mt-bold",
-  },
-});
+    contentContainer: {
+      flex: 1,
+    },
+    tabBar: {
+      flexDirection: "row",
+      height: 60,
+      backgroundColor: colors.tabBarBackground,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: -2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 5,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    tabButton: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    tabIcon: {
+      fontSize: 24,
+      marginBottom: 2,
+    },
+    tabText: {
+      fontSize: 11,
+      fontFamily: "mt-light",
+    },
+    activeTabText: {
+      fontFamily: "mt-bold",
+    },
+  });
