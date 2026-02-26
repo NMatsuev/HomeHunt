@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 
 export const lightTheme = {
   dark: false,
@@ -27,7 +27,6 @@ export const lightTheme = {
   },
 };
 
-// Определяем цвета для темной темы
 export const darkTheme = {
   dark: true,
   colors: {
@@ -54,7 +53,7 @@ export const darkTheme = {
   },
 };
 
-const THEME_STORAGE_KEY = "@app_theme_preference";
+const THEME_STORAGE_KEY = "app_theme_preference";
 
 const ThemeContext = createContext();
 
@@ -63,12 +62,12 @@ export const ThemeProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    //loadThemePreference();
+    loadThemePreference();
   }, []);
 
   const loadThemePreference = async () => {
     try {
-      const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      const savedTheme = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
       if (savedTheme) {
         setThemeState(savedTheme);
       }
@@ -81,7 +80,7 @@ export const ThemeProvider = ({ children }) => {
 
   const saveThemePreference = async (newTheme) => {
     try {
-      //await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+      await SecureStore.setItemAsync(THEME_STORAGE_KEY, newTheme);
       setThemeState(newTheme);
     } catch (error) {
       console.error("Error saving theme preference:", error);
@@ -99,17 +98,12 @@ export const ThemeProvider = ({ children }) => {
   };
 
   const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-    } else {
-      setTheme("light");
-    }
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   const value = {
-    theme, // 'light', 'dark'
-    themeColors, // цвета текущей темы
-    isSystemTheme: theme === "system",
+    theme,
+    themeColors,
     isDarkMode: getCurrentTheme().dark,
     setTheme,
     toggleTheme,
