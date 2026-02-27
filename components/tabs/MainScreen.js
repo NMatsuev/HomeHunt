@@ -10,11 +10,11 @@ import {
   Modal,
 } from "react-native";
 import { gStyle } from "../../styles/style";
-import { useLanguage } from "../../i18n/LanguageContext";
-import { useTheme } from "../../theme/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
+import { useTheme } from "../../context/ThemeContext";
 import { useOffers } from "../../context/OffersContext";
 import { useNavigation } from "@react-navigation/native";
-import OfferForm from "../forms/OfferForm"; // Импортируйте форму
+import OfferForm from "../forms/OfferForm";
 
 export default function MainScreen() {
   const { t } = useLanguage();
@@ -69,7 +69,6 @@ export default function MainScreen() {
 
         <View style={styles.detailsRow}>
           <View style={styles.detailItem}>
-            <Text style={styles.detailIcon}>📐</Text>
             <Text
               style={[styles.detailText, { color: themeColors.textSecondary }]}
             >
@@ -77,7 +76,6 @@ export default function MainScreen() {
             </Text>
           </View>
           <View style={styles.detailItem}>
-            <Text style={styles.detailIcon}>📌</Text>
             <Text
               style={[styles.detailText, { color: themeColors.textSecondary }]}
             >
@@ -90,7 +88,6 @@ export default function MainScreen() {
         </View>
 
         <View style={styles.addressContainer}>
-          <Text style={styles.addressIcon}>📍</Text>
           <Text
             style={[styles.address, { color: themeColors.textSecondary }]}
             numberOfLines={1}

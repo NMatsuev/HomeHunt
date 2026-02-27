@@ -6,7 +6,7 @@ import {
   useEffect,
 } from "react";
 import * as SecureStore from "expo-secure-store";
-import i18n from "./i18n";
+import i18n from "../i18n/i18n";
 import { LANGUAGE_STORAGE_KEY } from "../config/StorageKeys";
 
 const LanguageContext = createContext();

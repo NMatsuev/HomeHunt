@@ -1,9 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Easing, Image } from "react-native";
-import { useTheme } from "../theme/ThemeContext";
 
 export default function CustomSplashScreen({ onFinish }) {
-  const { themeColors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
 
@@ -37,9 +35,7 @@ export default function CustomSplashScreen({ onFinish }) {
   }, []);
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: themeColors.background }]}
-    >
+    <View style={[styles.container]}>
       <Animated.View
         style={[
           styles.content,
@@ -54,24 +50,10 @@ export default function CustomSplashScreen({ onFinish }) {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={[styles.title, { color: themeColors.primary }]}>
-          Недвижимость
-        </Text>
-        <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-          Поиск лучших предложений
-        </Text>
+        <Text style={[styles.title]}>HomeHunt</Text>
         <View style={styles.loaderContainer}>
-          <View
-            style={[styles.loader, { backgroundColor: themeColors.primary }]}
-          >
-            <Animated.View
-              style={[
-                styles.loaderProgress,
-                {
-                  backgroundColor: themeColors.primaryLight,
-                },
-              ]}
-            />
+          <View style={[styles.loader]}>
+            <Animated.View style={[styles.loaderProgress]} />
           </View>
         </View>
       </Animated.View>

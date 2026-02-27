@@ -1,5 +1,5 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "../context/ThemeContext";
 
 export default function CustomAlert({
   visible,

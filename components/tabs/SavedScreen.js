@@ -1,17 +1,20 @@
 import { StyleSheet, View, Text } from "react-native";
 import { gStyle } from "../../styles/style";
-import { useTheme } from "../../theme/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function SavedScreen() {
   const { themeColors } = useTheme();
-
+  const { t } = useLanguage();
   const styles = createStyles(themeColors);
 
   return (
     <View style={styles.container}>
-      <Text style={[gStyle.title, { color: themeColors.text }]}>Сохранено</Text>
+      <Text style={[gStyle.title, { color: themeColors.text }]}>
+        {t("savedScreen.title")}
+      </Text>
       <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-        Здесь будут отображаться сохраненные объявления
+        {t("savedScreen.text")}
       </Text>
     </View>
   );

@@ -11,8 +11,8 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { useLanguage } from "../../i18n/LanguageContext";
-import { useTheme } from "../../theme/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function SettingsScreen() {
   const { t, setLocale, locale, availableLanguages } = useLanguage();

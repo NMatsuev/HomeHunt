@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { useLanguage } from "../i18n/LanguageContext";
-import { useTheme } from "../theme/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import OfferDetailsScreen from "../components/OfferDetailsScreen";
 import OfferForm from "../components/forms/OfferForm";

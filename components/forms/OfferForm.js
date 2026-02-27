@@ -10,43 +10,40 @@ import {
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { useTheme } from "../../theme/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "../../context/LanguageContext";
 
-// Схема валидации
-const OfferSchema = Yup.object().shape({
-  title: Yup.string()
-    .required("Название обязательно")
-    .min(5, "Название должно быть минимум 5 символов")
-    .max(50, "Название слишком длинное"),
-  price: Yup.string()
-    .required("Цена обязательна")
-    .matches(
-      /^\d[\d\s]*₽?$/,
-      "Введите корректную цену (например: 5 000 000 ₽)",
-    ),
-  rooms: Yup.number()
-    .typeError("Должно быть число")
-    .integer("Должно быть целое число")
-    .min(1, "Минимум 1 комната")
-    .max(10, "Максимум 10 комнат"),
-  area: Yup.number()
-    .typeError("Должно быть число")
-    .positive("Площадь должна быть положительной")
-    .max(1000, "Максимальная площадь 1000 м²"),
-  floor: Yup.string(),
-  floorCount: Yup.number()
-    .typeError("Должно быть число")
-    .integer("Должно быть целое число")
-    .min(1, "Минимум 1 этаж")
-    .max(200, "Максимум 200 этажей"),
-  address: Yup.string()
-    .required("Адрес обязателен")
-    .min(10, "Адрес должен быть минимум 10 символов"),
-  description: Yup.string().max(
-    500,
-    "Описание слишком длинное (максимум 500 символов)",
-  ),
-});
+// Схема валидации с поддержкой языка
+const getValidationSchema = (t) => {
+  return Yup.object().shape({
+    title: Yup.string()
+      .required(t("form.validation.titleRequired"))
+      .min(5, t("form.validation.titleMin"))
+      .max(50, t("form.validation.titleMax")),
+    price: Yup.string()
+      .required(t("form.validation.priceRequired"))
+      .matches(/^\d[\d\s]*₽?$/, t("form.validation.priceFormat")),
+    rooms: Yup.number()
+      .typeError(t("form.validation.numberRequired"))
+      .integer(t("form.validation.integerRequired"))
+      .min(1, t("form.validation.roomsMin"))
+      .max(10, t("form.validation.roomsMax")),
+    area: Yup.number()
+      .typeError(t("form.validation.numberRequired"))
+      .positive(t("form.validation.areaPositive"))
+      .max(1000, t("form.validation.areaMax")),
+    floor: Yup.string(),
+    floorCount: Yup.number()
+      .typeError(t("form.validation.numberRequired"))
+      .integer(t("form.validation.integerRequired"))
+      .min(1, t("form.validation.floorCountMin"))
+      .max(200, t("form.validation.floorCountMax")),
+    address: Yup.string()
+      .required(t("form.validation.addressRequired"))
+      .min(10, t("form.validation.addressMin")),
+    description: Yup.string().max(500, t("form.validation.descriptionMax")),
+  });
+};
 
 export default function OfferForm({
   initialOffer = null,
@@ -55,6 +52,7 @@ export default function OfferForm({
   isEditing = false,
 }) {
   const { themeColors } = useTheme();
+  const { t } = useLanguage();
 
   // Подготавливаем начальные значения
   const getInitialValues = () => {
@@ -118,7 +116,7 @@ export default function OfferForm({
   return (
     <Formik
       initialValues={getInitialValues()}
-      validationSchema={OfferSchema}
+      validationSchema={getValidationSchema(t)}
       onSubmit={handleSubmit}
     >
       {({
@@ -139,7 +137,7 @@ export default function OfferForm({
             {/* Поле Название */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: themeColors.text }]}>
-                Название <Text style={styles.required}>*</Text>
+                {t("form.title")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 style={[
@@ -153,7 +151,7 @@ export default function OfferForm({
                         : themeColors.border,
                   },
                 ]}
-                placeholder="Введите название"
+                placeholder={t("form.titlePlaceholder")}
                 placeholderTextColor={themeColors.placeholder}
                 value={values.title}
                 onChangeText={handleChange("title")}
@@ -169,7 +167,7 @@ export default function OfferForm({
             {/* Поле Цена */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: themeColors.text }]}>
-                Цена <Text style={styles.required}>*</Text>
+                {t("form.price")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 style={[
@@ -183,7 +181,7 @@ export default function OfferForm({
                         : themeColors.border,
                   },
                 ]}
-                placeholder="Например: 5 000 000 ₽"
+                placeholder={t("form.pricePlaceholder")}
                 placeholderTextColor={themeColors.placeholder}
                 value={values.price}
                 onChangeText={handleChange("price")}
@@ -200,7 +198,7 @@ export default function OfferForm({
             <View style={styles.rowInputs}>
               <View style={[styles.inputGroup, styles.halfWidth]}>
                 <Text style={[styles.label, { color: themeColors.text }]}>
-                  Комнат
+                  {t("form.rooms")}
                 </Text>
                 <TextInput
                   style={[
@@ -214,7 +212,7 @@ export default function OfferForm({
                           : themeColors.border,
                     },
                   ]}
-                  placeholder="Кол-во"
+                  placeholder={t("form.roomsPlaceholder")}
                   placeholderTextColor={themeColors.placeholder}
                   keyboardType="numeric"
                   value={values.rooms}
@@ -232,7 +230,7 @@ export default function OfferForm({
 
               <View style={[styles.inputGroup, styles.halfWidth]}>
                 <Text style={[styles.label, { color: themeColors.text }]}>
-                  Площадь (м²)
+                  {t("form.area")}
                 </Text>
                 <TextInput
                   style={[
@@ -246,7 +244,7 @@ export default function OfferForm({
                           : themeColors.border,
                     },
                   ]}
-                  placeholder="Площадь"
+                  placeholder={t("form.areaPlaceholder")}
                   placeholderTextColor={themeColors.placeholder}
                   keyboardType="numeric"
                   value={values.area}
@@ -267,7 +265,7 @@ export default function OfferForm({
             <View style={styles.rowInputs}>
               <View style={[styles.inputGroup, styles.halfWidth]}>
                 <Text style={[styles.label, { color: themeColors.text }]}>
-                  Этаж
+                  {t("form.floor")}
                 </Text>
                 <TextInput
                   style={[
@@ -281,7 +279,7 @@ export default function OfferForm({
                           : themeColors.border,
                     },
                   ]}
-                  placeholder="Этаж"
+                  placeholder={t("form.floorPlaceholder")}
                   placeholderTextColor={themeColors.placeholder}
                   value={values.floor}
                   onChangeText={handleChange("floor")}
@@ -291,7 +289,7 @@ export default function OfferForm({
 
               <View style={[styles.inputGroup, styles.halfWidth]}>
                 <Text style={[styles.label, { color: themeColors.text }]}>
-                  Всего этажей
+                  {t("form.floorCount")}
                 </Text>
                 <TextInput
                   style={[
@@ -305,7 +303,7 @@ export default function OfferForm({
                           : themeColors.border,
                     },
                   ]}
-                  placeholder="Этажей"
+                  placeholder={t("form.floorCountPlaceholder")}
                   placeholderTextColor={themeColors.placeholder}
                   keyboardType="numeric"
                   value={values.floorCount}
@@ -325,7 +323,7 @@ export default function OfferForm({
             {/* Поле Адрес */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: themeColors.text }]}>
-                Адрес <Text style={styles.required}>*</Text>
+                {t("form.address")} <Text style={styles.required}>*</Text>
               </Text>
               <TextInput
                 style={[
@@ -339,7 +337,7 @@ export default function OfferForm({
                         : themeColors.border,
                   },
                 ]}
-                placeholder="Введите адрес"
+                placeholder={t("form.addressPlaceholder")}
                 placeholderTextColor={themeColors.placeholder}
                 value={values.address}
                 onChangeText={handleChange("address")}
@@ -355,7 +353,7 @@ export default function OfferForm({
             {/* Поле Описание */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: themeColors.text }]}>
-                Описание
+                {t("form.description")}
               </Text>
               <TextInput
                 style={[
@@ -370,7 +368,7 @@ export default function OfferForm({
                         : themeColors.border,
                   },
                 ]}
-                placeholder="Введите описание"
+                placeholder={t("form.descriptionPlaceholder")}
                 placeholderTextColor={themeColors.placeholder}
                 multiline={true}
                 numberOfLines={4}
@@ -406,7 +404,7 @@ export default function OfferForm({
                     { color: themeColors.textSecondary },
                   ]}
                 >
-                  Отмена
+                  {t("form.cancel")}
                 </Text>
               </TouchableOpacity>
 
@@ -422,11 +420,11 @@ export default function OfferForm({
                 <Text style={styles.submitButtonText}>
                   {isSubmitting
                     ? isEditing
-                      ? "Сохранение..."
-                      : "Добавление..."
+                      ? t("form.saving")
+                      : t("form.adding")
                     : isEditing
-                      ? "Сохранить"
-                      : "Добавить"}
+                      ? t("form.save")
+                      : t("form.add")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -441,6 +439,7 @@ const createStyles = (colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: colors.background, // 👈 Добавлен фон
     },
     contentContainer: {
       flexGrow: 1,

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import CustomTabNavigator from "./components/CustomTabNavigator";
-import { LanguageProvider } from "./i18n/LanguageContext";
-import { ThemeProvider } from "./theme/ThemeContext";
+import { LanguageProvider } from "./context/LanguageContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { OffersProvider } from "./context/OffersContext";
 import { useLoadResources } from "./hooks/useLoadResources";
 import {

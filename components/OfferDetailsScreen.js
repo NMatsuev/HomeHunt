@@ -8,10 +8,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
-  SafeAreaView,
 } from "react-native";
-import { useTheme } from "../theme/ThemeContext";
-import { useLanguage } from "../i18n/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useOffers } from "../context/OffersContext";
 import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
@@ -99,14 +98,6 @@ export default function OfferDetailsScreen({ route, navigation }) {
             </Text>
             <View style={styles.characteristicsGrid}>
               <View style={styles.characteristicItem}>
-                <Text
-                  style={[
-                    styles.characteristicIcon,
-                    { color: themeColors.primary },
-                  ]}
-                >
-                  📐
-                </Text>
                 <View>
                   <Text
                     style={[
@@ -128,14 +119,6 @@ export default function OfferDetailsScreen({ route, navigation }) {
               </View>
 
               <View style={styles.characteristicItem}>
-                <Text
-                  style={[
-                    styles.characteristicIcon,
-                    { color: themeColors.primary },
-                  ]}
-                >
-                  📌
-                </Text>
                 <View>
                   <Text
                     style={[
@@ -164,11 +147,6 @@ export default function OfferDetailsScreen({ route, navigation }) {
               Адрес
             </Text>
             <View style={styles.addressContainer}>
-              <Text
-                style={[styles.addressIcon, { color: themeColors.primary }]}
-              >
-                📍
-              </Text>
               <Text style={[styles.address, { color: themeColors.text }]}>
                 {offer.address}
               </Text>
@@ -267,44 +245,37 @@ export default function OfferDetailsScreen({ route, navigation }) {
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <SafeAreaView
+        <View
           style={[
-            styles.modalContainer,
-            { backgroundColor: themeColors.background },
+            styles.modalHeader,
+            {
+              backgroundColor: themeColors.headerBackground,
+              borderBottomColor: themeColors.border,
+            },
           ]}
         >
-          <View
-            style={[
-              styles.modalHeader,
-              {
-                backgroundColor: themeColors.headerBackground,
-                borderBottomColor: themeColors.border,
-              },
-            ]}
+          <TouchableOpacity
+            style={styles.modalBackButton}
+            onPress={() => setEditModalVisible(false)}
           >
-            <TouchableOpacity
-              style={styles.modalBackButton}
-              onPress={() => setEditModalVisible(false)}
+            <Text
+              style={[styles.modalBackText, { color: themeColors.primary }]}
             >
-              <Text
-                style={[styles.modalBackText, { color: themeColors.primary }]}
-              >
-                ← Назад
-              </Text>
-            </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-              Редактировать объявление
+              ← Назад
             </Text>
-            <View style={styles.modalPlaceholder} />
-          </View>
+          </TouchableOpacity>
+          <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+            Редактировать объявление
+          </Text>
+          <View style={styles.modalPlaceholder} />
+        </View>
 
-          <OfferForm
-            initialOffer={offer}
-            onSubmit={handleEdit}
-            onCancel={() => setEditModalVisible(false)}
-            isEditing={true}
-          />
-        </SafeAreaView>
+        <OfferForm
+          initialOffer={offer}
+          onSubmit={handleEdit}
+          onCancel={() => setEditModalVisible(false)}
+          isEditing={true}
+        />
       </Modal>
     </View>
   );
