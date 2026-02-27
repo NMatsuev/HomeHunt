@@ -1,13 +1,14 @@
-import { StyleSheet, View, ActivityIndicator } from "react-native";
-import * as Font from "expo-font";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 import CustomTabNavigator from "./components/CustomTabNavigator";
 import { LanguageProvider } from "./i18n/LanguageContext";
 import { ThemeProvider } from "./theme/ThemeContext";
+import { useLoadResources } from "./hooks/useLoadResources";
 import {
   useSafeAreaInsets,
   SafeAreaProvider,
 } from "react-native-safe-area-context";
+import CustomSplashScreen from "./components/CustomSplashScreen";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
@@ -30,33 +31,27 @@ function AppContent() {
 }
 
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const { isLoading, themePreference, languagePreference } = useLoadResources();
+  const [splashVisible, setSplashVisible] = useState(true);
 
-  useEffect(() => {
-    async function loadFonts() {
-      await Font.loadAsync({
-        "mt-bold": require("./assets/fonts/Montserrat-Bold.ttf"),
-        "mt-light": require("./assets/fonts/Montserrat-Light.ttf"),
-      });
-      setTimeout(() => {
-        setFontsLoaded(true);
-      }, 3000);
-    }
-    loadFonts();
-  }, []);
+  const handleSplashFinish = () => {
+    setSplashVisible(false);
+  };
 
-  if (!fontsLoaded) {
+  if (isLoading || splashVisible) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <CustomSplashScreen onFinish={handleSplashFinish} />
+        </ThemeProvider>
+      </SafeAreaProvider>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <LanguageProvider>
-        <ThemeProvider>
+      <LanguageProvider initialLanguage={languagePreference}>
+        <ThemeProvider initialTheme={themePreference}>
           <AppContent />
         </ThemeProvider>
       </LanguageProvider>

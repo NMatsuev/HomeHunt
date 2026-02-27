@@ -7,42 +7,28 @@ import {
 } from "react";
 import * as SecureStore from "expo-secure-store";
 import i18n from "./i18n";
-
-const LANGUAGE_STORAGE_KEY = "app_language_preference";
+import { LANGUAGE_STORAGE_KEY } from "../config/StorageKeys";
 
 const LanguageContext = createContext();
 
-export const LanguageProvider = ({ children }) => {
-  const [locale, setLocaleState] = useState(i18n.locale);
+export const LanguageProvider = ({ children, initialLanguage = "ru" }) => {
+  const [locale, setLocaleState] = useState(initialLanguage);
   const [updateKey, setUpdateKey] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    loadLanguagePreference();
+    i18n.locale = locale;
+    setIsInitialized(true);
   }, []);
-
-  const loadLanguagePreference = async () => {
-    try {
-      const savedLanguage =
-        await SecureStore.getItemAsync(LANGUAGE_STORAGE_KEY);
-      if (savedLanguage) {
-        setLocaleState(savedLanguage);
-      }
-    } catch (error) {
-      console.error("Error loading language preference:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const saveLanguagePreference = async (newLocale) => {
     try {
       await SecureStore.setItemAsync(LANGUAGE_STORAGE_KEY, newLocale);
-      setLocaleState(newLocale);
     } catch (error) {
       console.error("Error saving language preference:", error);
     }
   };
+
   const setLocale = useCallback((newLocale) => {
     i18n.locale = newLocale;
     setLocaleState(newLocale);
@@ -58,11 +44,14 @@ export const LanguageProvider = ({ children }) => {
     }));
   }, [updateKey]);
 
+  if (!isInitialized) {
+    return null;
+  }
+
   const value = {
     locale,
     setLocale,
     updateKey,
-    isLoading,
     availableLanguages: availableLanguages(),
     t: (key, options) => i18n.t(key, options),
   };

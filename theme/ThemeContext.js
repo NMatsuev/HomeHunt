@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import * as SecureStore from "expo-secure-store";
+import { THEME_STORAGE_KEY } from "../config/StorageKeys";
 
 export const lightTheme = {
   dark: false,
@@ -53,30 +54,10 @@ export const darkTheme = {
   },
 };
 
-const THEME_STORAGE_KEY = "app_theme_preference";
-
 const ThemeContext = createContext();
 
-export const ThemeProvider = ({ children }) => {
-  const [theme, setThemeState] = useState("light");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    loadThemePreference();
-  }, []);
-
-  const loadThemePreference = async () => {
-    try {
-      const savedTheme = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
-      if (savedTheme) {
-        setThemeState(savedTheme);
-      }
-    } catch (error) {
-      console.error("Error loading theme preference:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+export const ThemeProvider = ({ children, initialTheme = "light" }) => {
+  const [theme, setThemeState] = useState(initialTheme);
 
   const saveThemePreference = async (newTheme) => {
     try {
@@ -97,17 +78,10 @@ export const ThemeProvider = ({ children }) => {
     saveThemePreference(newTheme);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
   const value = {
     theme,
     themeColors,
-    isDarkMode: getCurrentTheme().dark,
     setTheme,
-    toggleTheme,
-    isLoading,
   };
 
   return (
