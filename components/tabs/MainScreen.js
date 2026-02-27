@@ -1,3 +1,5 @@
+// screens/tabs/MainScreen.js
+import React, { useState } from "react"; // Добавьте useState
 import {
   StyleSheet,
   View,
@@ -5,87 +7,36 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { gStyle } from "../../styles/style";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { useTheme } from "../../theme/ThemeContext";
-
-const INITIAL_OFFERS = [
-  {
-    id: "1",
-    title: "Квартира в центре",
-    price: "12 500 000 ₽",
-    rooms: 3,
-    area: 75,
-    floor: "5",
-    floorCount: 12,
-    address: "ул. Тверская, 15, Москва",
-    description:
-      "Просторная квартира с панорамными окнами, отличный вариант для семьи. Рядом метро, парк и вся необходимая инфраструктура.",
-    image: "https://via.placeholder.com/100x100/ff6b6b/ffffff?text=🏠",
-  },
-  {
-    id: "2",
-    title: "Студия в новостройке",
-    price: "8 200 000 ₽",
-    rooms: 1,
-    area: 32,
-    floor: "8",
-    floorCount: 25,
-    address: "ул. Ленина, 42, Москва",
-    description:
-      "Уютная студия с чистовой отделкой, подходит для инвестиций или проживания. Дом сдан, можно заезжать.",
-    image: "https://via.placeholder.com/100x100/4ecdc4/ffffff?text=🏢",
-  },
-  {
-    id: "3",
-    title: "Двухуровневая квартира",
-    price: "18 700 000 ₽",
-    rooms: 4,
-    area: 120,
-    floor: "14-15",
-    floorCount: 15,
-    address: "пр. Мира, 87, Москва",
-    description:
-      "Эксклюзивное предложение - двухуровневая квартира с террасой и прекрасным видом на город.",
-    image: "https://via.placeholder.com/100x100/ffd93d/ffffff?text=🏛️",
-  },
-  {
-    id: "4",
-    title: "Квартира у парка",
-    price: "9 900 000 ₽",
-    rooms: 2,
-    area: 54,
-    floor: "3",
-    floorCount: 9,
-    address: "ул. Парковая, 5, Москва",
-    description:
-      "Светлая квартира с выходом на парк. Хороший ремонт, встроенная кухня, кондиционер.",
-    image: "https://via.placeholder.com/100x100/6c5ce7/ffffff?text=🌳",
-  },
-  {
-    id: "5",
-    title: "Пентхаус с террасой",
-    price: "25 000 000 ₽",
-    rooms: 5,
-    area: 150,
-    floor: "16",
-    floorCount: 16,
-    address: "наб. Тараса Шевченко, 3, Москва",
-    description:
-      "Роскошный пентхаус с собственной террасой 50 м², панорамным остеклением и видом на Москва-Сити.",
-    image: "https://via.placeholder.com/100x100/e17055/ffffff?text=🏰",
-  },
-];
+import { useOffers } from "../../context/OffersContext";
+import { useNavigation } from "@react-navigation/native";
+import OfferForm from "../forms/OfferForm"; // Импортируйте форму
 
 export default function MainScreen() {
   const { t } = useLanguage();
   const { themeColors } = useTheme();
+  const navigation = useNavigation();
+  const { offers, addOffer } = useOffers(); // Добавьте addOffer из контекста
+  const [modalVisible, setModalVisible] = useState(false); // Состояние для модального окна
+
+  const handleAddOffer = (newOffer) => {
+    addOffer(newOffer);
+    setModalVisible(false);
+  };
 
   const renderOffer = ({ item }) => (
     <TouchableOpacity
       style={[styles.offerCard, { backgroundColor: themeColors.card }]}
       activeOpacity={0.7}
+      onPress={() =>
+        navigation.navigate("OfferDetails", {
+          offer: item,
+        })
+      }
     >
       <View style={styles.imageContainer}>
         <Image
@@ -163,16 +114,24 @@ export default function MainScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[gStyle.title, { color: themeColors.text }]}>
-          {t("mainScreen.title")}
-        </Text>
+        <View style={styles.headerTop}>
+          <Text style={[gStyle.title, { color: themeColors.text }]}>
+            {t("mainScreen.title")}
+          </Text>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: themeColors.primary }]}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.addButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={[styles.counter, { color: themeColors.textSecondary }]}>
-          {t("mainScreen.found", { count: INITIAL_OFFERS.length })}
+          {t("mainScreen.found", { count: offers.length })}
         </Text>
       </View>
 
       <FlatList
-        data={INITIAL_OFFERS}
+        data={offers}
         renderItem={renderOffer}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
@@ -183,6 +142,44 @@ export default function MainScreen() {
           />
         )}
       />
+
+      {/* Модальное окно на весь экран */}
+      <Modal
+        animationType="slide"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View
+          style={[
+            styles.modalHeader,
+            {
+              backgroundColor: themeColors.headerBackground,
+              borderBottomColor: themeColors.border,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.modalBackButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text
+              style={[styles.modalBackText, { color: themeColors.primary }]}
+            >
+              ← Назад
+            </Text>
+          </TouchableOpacity>
+          <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+            Добавить объявление
+          </Text>
+          <View style={styles.modalPlaceholder} />
+        </View>
+
+        <OfferForm
+          onSubmit={handleAddOffer}
+          onCancel={() => setModalVisible(false)}
+          isEditing={false}
+        />
+      </Modal>
     </View>
   );
 }
@@ -200,6 +197,31 @@ const createStyles = (colors) =>
       backgroundColor: colors.headerBackground,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+    },
+    headerTop: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    addButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    addButtonText: {
+      color: "#fff",
+      fontSize: 24,
+      fontWeight: "bold",
     },
     counter: {
       fontSize: 14,
@@ -299,5 +321,32 @@ const createStyles = (colors) =>
       fontSize: 12,
       fontFamily: "mt-light",
       lineHeight: 16,
+    },
+    // Стили для модального окна на весь экран
+    modalContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+    },
+    modalBackButton: {
+      padding: 8,
+    },
+    modalBackText: {
+      fontSize: 16,
+      fontFamily: "mt-bold",
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontFamily: "mt-bold",
+    },
+    modalPlaceholder: {
+      width: 50,
     },
   });

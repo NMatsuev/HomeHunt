@@ -8,6 +8,9 @@ import {
 } from "react-native";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useTheme } from "../theme/ThemeContext";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import OfferDetailsScreen from "../components/OfferDetailsScreen";
+import OfferForm from "../components/forms/OfferForm";
 
 import MainScreen from "./tabs/MainScreen";
 import SavedScreen from "./tabs/SavedScreen";
@@ -18,8 +21,32 @@ function TabNavigatorContent() {
   const { themeColors } = useTheme();
   const [activeTab, setActiveTab] = useState("main");
 
+  const Stack = createNativeStackNavigator();
+
+  function MainStackScreen() {
+    const { themeColors } = useTheme();
+
+    return (
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: themeColors.background },
+        }}
+      >
+        <Stack.Screen name="MainScreen" component={MainScreen} />
+        <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
+        <Stack.Screen name="EditOffer" component={OfferForm} />
+      </Stack.Navigator>
+    );
+  }
+
   const tabs = [
-    { key: "main", title: t("tabs.main"), icon: "🏠", component: MainScreen },
+    {
+      key: "main",
+      title: t("tabs.main"),
+      icon: "🏠",
+      component: MainStackScreen,
+    },
     {
       key: "saved",
       title: t("tabs.saved"),

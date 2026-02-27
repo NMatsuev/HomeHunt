@@ -3,12 +3,14 @@ import { StyleSheet, View } from "react-native";
 import CustomTabNavigator from "./components/CustomTabNavigator";
 import { LanguageProvider } from "./i18n/LanguageContext";
 import { ThemeProvider } from "./theme/ThemeContext";
+import { OffersProvider } from "./context/OffersContext";
 import { useLoadResources } from "./hooks/useLoadResources";
 import {
   useSafeAreaInsets,
   SafeAreaProvider,
 } from "react-native-safe-area-context";
 import CustomSplashScreen from "./components/CustomSplashScreen";
+import { NavigationContainer } from "@react-navigation/native";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
@@ -24,7 +26,9 @@ function AppContent() {
           flex: 1,
         }}
       >
-        <CustomTabNavigator />
+        <NavigationContainer>
+          <CustomTabNavigator />
+        </NavigationContainer>
       </View>
     </View>
   );
@@ -52,17 +56,11 @@ export default function App() {
     <SafeAreaProvider>
       <LanguageProvider initialLanguage={languagePreference}>
         <ThemeProvider initialTheme={themePreference}>
-          <AppContent />
+          <OffersProvider>
+            <AppContent />
+          </OffersProvider>
         </ThemeProvider>
       </LanguageProvider>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
