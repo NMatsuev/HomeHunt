@@ -65,7 +65,7 @@ export const OffersProvider = ({ children }) => {
         address: "ул. Тверская, 15, Москва",
         description:
           "Просторная квартира с панорамными окнами, отличный вариант для семьи. Рядом метро, парк и вся необходимая инфраструктура.",
-        image: "https://via.placeholder.com/100x100/ff6b6b/ffffff?text=🏠",
+        image: require("../assets/logo.png"),
       },
       {
         id: "2",
@@ -78,7 +78,7 @@ export const OffersProvider = ({ children }) => {
         address: "ул. Ленина, 42, Москва",
         description:
           "Уютная студия с чистовой отделкой, подходит для инвестиций или проживания. Дом сдан, можно заезжать.",
-        image: "https://via.placeholder.com/100x100/4ecdc4/ffffff?text=🏢",
+        image: require("../assets/logo.png"),
       },
       {
         id: "3",
@@ -91,7 +91,7 @@ export const OffersProvider = ({ children }) => {
         address: "пр. Мира, 87, Москва",
         description:
           "Эксклюзивное предложение - двухуровневая квартира с террасой и прекрасным видом на город.",
-        image: "https://via.placeholder.com/100x100/ffd93d/ffffff?text=🏛️",
+        image: require("../assets/logo.png"),
       },
       {
         id: "4",
@@ -104,7 +104,7 @@ export const OffersProvider = ({ children }) => {
         address: "ул. Парковая, 5, Москва",
         description:
           "Светлая квартира с выходом на парк. Хороший ремонт, встроенная кухня, кондиционер.",
-        image: "https://via.placeholder.com/100x100/6c5ce7/ffffff?text=🌳",
+        image: require("../assets/logo.png"),
       },
       {
         id: "5",
@@ -117,7 +117,7 @@ export const OffersProvider = ({ children }) => {
         address: "наб. Тараса Шевченко, 3, Москва",
         description:
           "Роскошный пентхаус с собственной террасой 50 м², панорамным остеклением и видом на Москва-Сити.",
-        image: "https://via.placeholder.com/100x100/e17055/ffffff?text=🏰",
+        image: require("../assets/logo.png"),
       },
     ];
 

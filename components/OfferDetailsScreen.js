@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -50,11 +51,11 @@ export default function OfferDetailsScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
         >
           <Text style={[styles.backButtonText, { color: themeColors.primary }]}>
-            ← Назад
+            ← {t("offerDetails.back")}
           </Text>
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: themeColors.text }]}>
-          Детали объявления
+          {t("offerDetails.title")}
         </Text>
         <View style={styles.placeholder} />
       </View>
@@ -62,11 +63,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Изображение */}
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: offer.image }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <Image source={offer.image} style={styles.image} resizeMode="cover" />
         </View>
 
         {/* Основная информация */}
@@ -94,7 +91,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
           {/* Характеристики */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: themeColors.text }]}>
-              Характеристики
+              {t("offerDetails.characteristics")}
             </Text>
             <View style={styles.characteristicsGrid}>
               <View style={styles.characteristicItem}>
@@ -105,7 +102,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
                       { color: themeColors.textSecondary },
                     ]}
                   >
-                    Площадь
+                    {t("offerDetails.area")}
                   </Text>
                   <Text
                     style={[
@@ -113,7 +110,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
                       { color: themeColors.text },
                     ]}
                   >
-                    {offer.area} м²
+                    {t("offerDetails.areaValue", { value: offer.area })}
                   </Text>
                 </View>
               </View>
@@ -126,7 +123,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
                       { color: themeColors.textSecondary },
                     ]}
                   >
-                    Этаж
+                    {t("offerDetails.floor")}
                   </Text>
                   <Text
                     style={[
@@ -134,7 +131,10 @@ export default function OfferDetailsScreen({ route, navigation }) {
                       { color: themeColors.text },
                     ]}
                   >
-                    {offer.floor}/{offer.floorCount}
+                    {t("offerDetails.floorValue", {
+                      current: offer.floor,
+                      total: offer.floorCount,
+                    })}
                   </Text>
                 </View>
               </View>
@@ -144,7 +144,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
           {/* Адрес */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: themeColors.text }]}>
-              Адрес
+              {t("offerDetails.address")}
             </Text>
             <View style={styles.addressContainer}>
               <Text style={[styles.address, { color: themeColors.text }]}>
@@ -156,7 +156,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
           {/* Описание */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: themeColors.text }]}>
-              Описание
+              {t("offerDetails.description")}
             </Text>
             <Text
               style={[styles.description, { color: themeColors.textSecondary }]}
@@ -168,7 +168,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
           {/* Дополнительная информация */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: themeColors.text }]}>
-              Дополнительно
+              {t("offerDetails.additional")}
             </Text>
             <View style={styles.additionalInfo}>
               <View style={styles.infoRow}>
@@ -178,7 +178,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
                     { color: themeColors.textSecondary },
                   ]}
                 >
-                  ID объявления:
+                  {t("offerDetails.id")}:
                 </Text>
                 <Text style={[styles.infoValue, { color: themeColors.text }]}>
                   {offer.id}
@@ -191,7 +191,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
                     { color: themeColors.textSecondary },
                   ]}
                 >
-                  Дата добавления:
+                  {t("offerDetails.date")}:
                 </Text>
                 <Text style={[styles.infoValue, { color: themeColors.text }]}>
                   {new Date().toLocaleDateString()}
@@ -211,7 +211,9 @@ export default function OfferDetailsScreen({ route, navigation }) {
             ]}
             onPress={() => setEditModalVisible(true)}
           >
-            <Text style={styles.actionButtonText}>✏️ Редактировать</Text>
+            <Text style={styles.actionButtonText}>
+              ✏️ {t("offerDetails.edit")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -222,7 +224,9 @@ export default function OfferDetailsScreen({ route, navigation }) {
             ]}
             onPress={handleDelete}
           >
-            <Text style={styles.actionButtonText}>🗑️ Удалить</Text>
+            <Text style={styles.actionButtonText}>
+              🗑️ {t("offerDetails.delete")}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -230,12 +234,12 @@ export default function OfferDetailsScreen({ route, navigation }) {
       {/* Кастомный Alert для подтверждения удаления */}
       <CustomAlert
         visible={alertVisible}
-        title="Удаление объявления"
-        message="Вы уверены, что хотите удалить это объявление?"
+        title={t("offerDetails.deleteTitle")}
+        message={t("offerDetails.deleteMessage")}
         onCancel={() => setAlertVisible(false)}
         onConfirm={confirmDelete}
-        cancelText="Отмена"
-        confirmText="Удалить"
+        cancelText={t("offerDetails.cancel")}
+        confirmText={t("offerDetails.confirmDelete")}
         confirmStyle="destructive"
       />
 
@@ -245,37 +249,44 @@ export default function OfferDetailsScreen({ route, navigation }) {
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View
+        <SafeAreaView
           style={[
-            styles.modalHeader,
-            {
-              backgroundColor: themeColors.headerBackground,
-              borderBottomColor: themeColors.border,
-            },
+            styles.modalContainer,
+            { backgroundColor: themeColors.background },
           ]}
         >
-          <TouchableOpacity
-            style={styles.modalBackButton}
-            onPress={() => setEditModalVisible(false)}
+          <View
+            style={[
+              styles.modalHeader,
+              {
+                backgroundColor: themeColors.headerBackground,
+                borderBottomColor: themeColors.border,
+              },
+            ]}
           >
-            <Text
-              style={[styles.modalBackText, { color: themeColors.primary }]}
+            <TouchableOpacity
+              style={styles.modalBackButton}
+              onPress={() => setEditModalVisible(false)}
             >
-              ← Назад
+              <Text
+                style={[styles.modalBackText, { color: themeColors.primary }]}
+              >
+                ← {t("offerDetails.back")}
+              </Text>
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+              {t("offerDetails.editTitle")}
             </Text>
-          </TouchableOpacity>
-          <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-            Редактировать объявление
-          </Text>
-          <View style={styles.modalPlaceholder} />
-        </View>
+            <View style={styles.modalPlaceholder} />
+          </View>
 
-        <OfferForm
-          initialOffer={offer}
-          onSubmit={handleEdit}
-          onCancel={() => setEditModalVisible(false)}
-          isEditing={true}
-        />
+          <OfferForm
+            initialOffer={offer}
+            onSubmit={handleEdit}
+            onCancel={() => setEditModalVisible(false)}
+            isEditing={true}
+          />
+        </SafeAreaView>
       </Modal>
     </View>
   );
@@ -381,10 +392,6 @@ const createStyles = (colors) =>
       alignItems: "center",
       flex: 1,
     },
-    characteristicIcon: {
-      fontSize: 24,
-      marginRight: 8,
-    },
     characteristicLabel: {
       fontSize: 12,
       fontFamily: "mt-light",
@@ -397,10 +404,6 @@ const createStyles = (colors) =>
     addressContainer: {
       flexDirection: "row",
       alignItems: "center",
-    },
-    addressIcon: {
-      fontSize: 20,
-      marginRight: 8,
     },
     address: {
       fontSize: 16,
@@ -454,7 +457,6 @@ const createStyles = (colors) =>
       fontSize: 16,
       fontFamily: "mt-bold",
     },
-    // Стили для модального окна на весь экран
     modalContainer: {
       flex: 1,
     },

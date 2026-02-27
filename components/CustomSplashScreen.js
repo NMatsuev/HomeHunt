@@ -46,16 +46,11 @@ export default function CustomSplashScreen({ onFinish }) {
         ]}
       >
         <Image
-          source={require("../assets/1.png")}
+          source={require("../assets/logo.png")}
           style={styles.logo}
           resizeMode="contain"
         />
         <Text style={[styles.title]}>HomeHunt</Text>
-        <View style={styles.loaderContainer}>
-          <View style={[styles.loader]}>
-            <Animated.View style={[styles.loaderProgress]} />
-          </View>
-        </View>
       </Animated.View>
     </View>
   );
@@ -69,7 +64,7 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: "center",
-    padding: 20,
+    padding: 10,
   },
   logo: {
     width: 120,
@@ -80,26 +75,5 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: "mt-bold",
     marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: "mt-light",
-    marginBottom: 40,
-  },
-  loaderContainer: {
-    width: 200,
-    height: 4,
-    borderRadius: 2,
-    overflow: "hidden",
-  },
-  loader: {
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-  },
-  loaderProgress: {
-    width: "100%",
-    height: "100%",
-    opacity: 0.3,
   },
 });
