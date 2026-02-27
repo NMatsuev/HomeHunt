@@ -1,5 +1,4 @@
-// screens/tabs/MainScreen.js
-import React, { useState } from "react"; // Добавьте useState
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -20,8 +19,8 @@ export default function MainScreen() {
   const { t } = useLanguage();
   const { themeColors } = useTheme();
   const navigation = useNavigation();
-  const { offers, addOffer } = useOffers(); // Добавьте addOffer из контекста
-  const [modalVisible, setModalVisible] = useState(false); // Состояние для модального окна
+  const { offers, addOffer } = useOffers();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleAddOffer = (newOffer) => {
     addOffer(newOffer);

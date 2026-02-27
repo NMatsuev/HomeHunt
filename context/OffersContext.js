@@ -1,5 +1,4 @@
-// context/OffersContext.js
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabaseSync("offers.db");
@@ -10,14 +9,12 @@ export const OffersProvider = ({ children }) => {
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Инициализация базы данных
   useEffect(() => {
     setupDatabase();
   }, []);
 
   const setupDatabase = async () => {
     try {
-      // Создаем таблицу
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS offers (
           id TEXT PRIMARY KEY,
@@ -33,17 +30,14 @@ export const OffersProvider = ({ children }) => {
         );
       `);
 
-      // Проверяем, есть ли данные
       const count = await db.getFirstAsync(
         "SELECT COUNT(*) as count FROM offers",
       );
 
       if (count.count === 0) {
-        // Добавляем начальные данные
         await insertInitialOffers();
       }
 
-      // Загружаем все предложения
       await loadOffers();
     } catch (error) {
       console.error("Database setup error:", error);

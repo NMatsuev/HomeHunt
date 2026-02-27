@@ -1,4 +1,3 @@
-// hooks/useLoadResources.js
 import { useState, useEffect } from "react";
 import * as Font from "expo-font";
 import * as SecureStore from "expo-secure-store";

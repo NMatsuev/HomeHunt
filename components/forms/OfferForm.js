@@ -1,5 +1,3 @@
-// components/forms/OfferForm.js
-import React from "react";
 import {
   View,
   Text,
@@ -13,7 +11,6 @@ import * as Yup from "yup";
 import { useTheme } from "../../context/ThemeContext";
 import { useLanguage } from "../../context/LanguageContext";
 
-// Схема валидации с поддержкой языка
 const getValidationSchema = (t) => {
   return Yup.object().shape({
     title: Yup.string()
@@ -54,7 +51,6 @@ export default function OfferForm({
   const { themeColors } = useTheme();
   const { t } = useLanguage();
 
-  // Подготавливаем начальные значения
   const getInitialValues = () => {
     if (initialOffer) {
       // Режим редактирования
@@ -84,7 +80,6 @@ export default function OfferForm({
 
   const handleSubmit = (values, { setSubmitting }) => {
     if (isEditing && initialOffer) {
-      // Режим редактирования - сохраняем ID и изображение
       const updatedOffer = {
         ...initialOffer,
         ...values,
@@ -94,9 +89,7 @@ export default function OfferForm({
       };
       onSubmit(updatedOffer);
     } else {
-      // Режим добавления - генерируем ID и изображение
       const colors = ["ff6b6b", "4ecdc4", "ffd93d", "6c5ce7", "e17055"];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
       const newOffer = {
         ...values,
@@ -104,7 +97,7 @@ export default function OfferForm({
         rooms: parseInt(values.rooms) || 1,
         area: parseInt(values.area) || 0,
         floorCount: parseInt(values.floorCount) || 1,
-        image: `https://via.placeholder.com/100x100/${randomColor}/ffffff?text=🏠`,
+        image: `../../assets/logo.png`,
       };
       onSubmit(newOffer);
     }
@@ -439,7 +432,7 @@ const createStyles = (colors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.background, // 👈 Добавлен фон
+      backgroundColor: colors.background,
     },
     contentContainer: {
       flexGrow: 1,
