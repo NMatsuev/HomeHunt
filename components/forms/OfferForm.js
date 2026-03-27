@@ -8,8 +8,8 @@ import {
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { useTheme } from "../../context/ThemeContext";
-import { useLanguage } from "../../context/LanguageContext";
+import useThemeViewModel from "../../viewModels/themeViewModel";
+import useLanguageViewModel from "../../viewModels/languageViewModel";
 
 const getValidationSchema = (t) => {
   return Yup.object().shape({
@@ -48,8 +48,8 @@ export default function OfferForm({
   onCancel,
   isEditing = false,
 }) {
-  const { themeColors } = useTheme();
-  const { t } = useLanguage();
+  const { themeColors } = useThemeViewModel();
+  const { t } = useLanguageViewModel();
 
   const getInitialValues = () => {
     if (initialOffer) {

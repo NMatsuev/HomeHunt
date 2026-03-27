@@ -9,17 +9,17 @@ import {
   Modal,
   SafeAreaView,
 } from "react-native";
-import { useTheme } from "../context/ThemeContext";
-import { useLanguage } from "../context/LanguageContext";
-import { useOffers } from "../context/OffersContext";
+import useThemeViewModel from "../viewModels/themeViewModel";
+import useLanguageViewModel from "../viewModels/languageViewModel";
+import useOffersViewModel from "../viewModels/offersViewModel";
 import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
 
 export default function OfferDetailsScreen({ route, navigation }) {
   const { offer } = route.params;
-  const { themeColors } = useTheme();
-  const { t } = useLanguage();
-  const { deleteOffer, editOffer } = useOffers();
+  const { themeColors } = useThemeViewModel();
+  const { t } = useLanguageViewModel();
+  const { deleteOffer, updateOffer } = useOffersViewModel();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
 
@@ -34,7 +34,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
   };
 
   const handleEdit = (editedOffer) => {
-    editOffer(editedOffer);
+    updateOffer(editedOffer);
     setEditModalVisible(false);
     navigation.goBack();
   };

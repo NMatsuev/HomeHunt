@@ -13,6 +13,8 @@ export default {
     area: "{{value}} м²",
     floor: "{{current}}/{{total}} эт.",
     address: "{{address}}",
+    back: "Назад",
+    add: "Добавить объявление",
   },
   savedScreen: {
     title: "Сохранено",

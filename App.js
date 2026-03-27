@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
 import CustomTabNavigator from "./components/CustomTabNavigator";
-import { LanguageProvider } from "./context/LanguageContext";
-import { ThemeProvider } from "./context/ThemeContext";
-import { OffersProvider } from "./context/OffersContext";
 import { useLoadResources } from "./hooks/useLoadResources";
 import {
   useSafeAreaInsets,
@@ -11,6 +8,8 @@ import {
 } from "react-native-safe-area-context";
 import CustomSplashScreen from "./components/CustomSplashScreen";
 import { NavigationContainer } from "@react-navigation/native";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
@@ -35,7 +34,7 @@ function AppContent() {
 }
 
 export default function App() {
-  const { isLoading, themePreference, languagePreference } = useLoadResources();
+  const { isLoading } = useLoadResources();
   const [splashVisible, setSplashVisible] = useState(true);
 
   const handleSplashFinish = () => {
@@ -45,22 +44,18 @@ export default function App() {
   if (isLoading || splashVisible) {
     return (
       <SafeAreaProvider>
-        <ThemeProvider>
+        <Provider store={store}>
           <CustomSplashScreen onFinish={handleSplashFinish} />
-        </ThemeProvider>
+        </Provider>
       </SafeAreaProvider>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <LanguageProvider initialLanguage={languagePreference}>
-        <ThemeProvider initialTheme={themePreference}>
-          <OffersProvider>
-            <AppContent />
-          </OffersProvider>
-        </ThemeProvider>
-      </LanguageProvider>
+      <Provider store={store}>
+        <AppContent />
+      </Provider>
     </SafeAreaProvider>
   );
 }

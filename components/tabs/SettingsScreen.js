@@ -11,12 +11,13 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { useLanguage } from "../../context/LanguageContext";
-import { useTheme } from "../../context/ThemeContext";
+import useLanguageViewModel from "../../viewModels/languageViewModel";
+import useThemeViewModel from "../../viewModels/themeViewModel";
 
 export default function SettingsScreen() {
-  const { t, setLocale, locale, availableLanguages } = useLanguage();
-  const { theme, setTheme, themeColors } = useTheme();
+  const { t, setLocale, currentLocale, availableLanguages } =
+    useLanguageViewModel();
+  const { theme, setTheme, themeColors } = useThemeViewModel();
 
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [themeModalVisible, setThemeModalVisible] = useState(false);
@@ -37,7 +38,7 @@ export default function SettingsScreen() {
   ];
 
   const changeLanguage = async (selectedLocale) => {
-    if (selectedLocale === locale) {
+    if (selectedLocale === currentLocale) {
       setLanguageModalVisible(false);
       return;
     }
@@ -80,7 +81,7 @@ export default function SettingsScreen() {
   };
 
   const currentLanguage =
-    availableLanguages.find((lang) => lang.code === locale) ||
+    availableLanguages.find((lang) => lang.code === currentLocale) ||
     availableLanguages[0];
 
   const currentTheme =
@@ -158,7 +159,8 @@ export default function SettingsScreen() {
                         <TouchableOpacity
                           style={[
                             styles.languageItem,
-                            locale === item.code && styles.languageItemActive,
+                            currentLocale === item.code &&
+                              styles.languageItemActive,
                             changingLanguage && styles.disabledItem,
                           ]}
                           onPress={() => changeLanguage(item.code)}
@@ -172,7 +174,7 @@ export default function SettingsScreen() {
                               <Text
                                 style={[
                                   styles.languageItemName,
-                                  locale === item.code &&
+                                  currentLocale === item.code &&
                                     styles.languageItemNameActive,
                                 ]}
                               >
@@ -180,12 +182,12 @@ export default function SettingsScreen() {
                               </Text>
                             </View>
                           </View>
-                          {locale === item.code && !changingLanguage && (
+                          {currentLocale === item.code && !changingLanguage && (
                             <View style={styles.modalCheckmark}>
                               <Text style={styles.modalCheckmarkText}>✓</Text>
                             </View>
                           )}
-                          {changingLanguage && locale === item.code && (
+                          {changingLanguage && currentLocale === item.code && (
                             <ActivityIndicator
                               size="small"
                               color={themeColors.primary}

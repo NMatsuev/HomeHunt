@@ -6,39 +6,38 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { useLanguage } from "../context/LanguageContext";
-import { useTheme } from "../context/ThemeContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import useLanguageViewModel from "../viewModels/languageViewModel";
+import useThemeViewModel from "../viewModels/themeViewModel";
 import OfferDetailsScreen from "../components/OfferDetailsScreen";
 import OfferForm from "../components/forms/OfferForm";
-
 import MainScreen from "./tabs/MainScreen";
 import SavedScreen from "./tabs/SavedScreen";
 import SettingsScreen from "./tabs/SettingsScreen";
 
-function TabNavigatorContent() {
-  const { t, locale } = useLanguage();
-  const { themeColors } = useTheme();
+const Stack = createNativeStackNavigator();
+
+function MainStackScreen() {
+  const { themeColors } = useThemeViewModel();
+
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: themeColors.background },
+      }}
+    >
+      <Stack.Screen name="MainScreen" component={MainScreen} />
+      <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
+      <Stack.Screen name="EditOffer" component={OfferForm} />
+    </Stack.Navigator>
+  );
+}
+
+export default function CustomTabNavigator() {
+  const { t } = useLanguageViewModel();
+  const { themeColors } = useThemeViewModel();
   const [activeTab, setActiveTab] = useState("main");
-
-  const Stack = createNativeStackNavigator();
-
-  function MainStackScreen() {
-    const { themeColors } = useTheme();
-
-    return (
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: themeColors.background },
-        }}
-      >
-        <Stack.Screen name="MainScreen" component={MainScreen} />
-        <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
-        <Stack.Screen name="EditOffer" component={OfferForm} />
-      </Stack.Navigator>
-    );
-  }
 
   const tabs = [
     {
@@ -50,7 +49,7 @@ function TabNavigatorContent() {
     {
       key: "saved",
       title: t("tabs.saved"),
-      icon: "👤",
+      icon: "⭐",
       component: SavedScreen,
     },
     {
@@ -61,77 +60,13 @@ function TabNavigatorContent() {
     },
   ];
 
-  const renderScreen = () => {
-    const activeTabConfig = tabs.find((tab) => tab.key === activeTab);
-    const Component = activeTabConfig?.component || MainScreen;
-    return <Component key={`screen-${activeTab}-${locale}`} />;
-  };
+  const ActiveComponent =
+    tabs.find((tab) => tab.key === activeTab)?.component || MainStackScreen;
 
-  const TabButton = ({ tab }) => {
-    const isActive = activeTab === tab.key;
-
-    return (
-      <TouchableOpacity
-        style={styles.tabButton}
-        onPress={() => setActiveTab(tab.key)}
-        activeOpacity={0.7}
-      >
-        <Text
-          style={[
-            styles.tabIcon,
-            {
-              color: isActive ? themeColors.primary : themeColors.textSecondary,
-            },
-          ]}
-        >
-          {tab.icon}
-        </Text>
-        <Text
-          style={[
-            styles.tabText,
-            {
-              color: isActive ? themeColors.primary : themeColors.textSecondary,
-            },
-            isActive && styles.activeTabText,
-          ]}
-        >
-          {tab.title}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const styles = createStyles(themeColors);
-
-  return (
-    <View style={styles.container} key={`container-${locale}`}>
-      <View style={styles.contentContainer}>{renderScreen()}</View>
-
-      <View
-        style={[
-          styles.tabBar,
-          { paddingBottom: Platform.OS === "ios" ? 5 : 0 },
-        ]}
-      >
-        {tabs.map((tab) => (
-          <TabButton key={tab.key} tab={tab} />
-        ))}
-      </View>
-    </View>
-  );
-}
-
-export default function CustomTabNavigator() {
-  const { themeColors } = useTheme();
-  // Принудительный перерендер при смене темы через key
-  return <TabNavigatorContent key={`navigator-${themeColors.background}`} />;
-}
-
-const createStyles = (colors) =>
-  StyleSheet.create({
+  const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: themeColors.background,
     },
     contentContainer: {
       flex: 1,
@@ -139,17 +74,14 @@ const createStyles = (colors) =>
     tabBar: {
       flexDirection: "row",
       height: 60,
-      backgroundColor: colors.tabBarBackground,
-      shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: -2,
-      },
+      backgroundColor: themeColors.tabBarBackground,
+      shadowColor: themeColors.shadow,
+      shadowOffset: { width: 0, height: -2 },
       shadowOpacity: 0.1,
       shadowRadius: 3,
       elevation: 5,
       borderTopWidth: 1,
-      borderTopColor: colors.border,
+      borderTopColor: themeColors.border,
     },
     tabButton: {
       flex: 1,
@@ -168,3 +100,56 @@ const createStyles = (colors) =>
       fontFamily: "mt-bold",
     },
   });
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.contentContainer}>
+        <ActiveComponent />
+      </View>
+
+      <View
+        style={[
+          styles.tabBar,
+          { paddingBottom: Platform.OS === "ios" ? 5 : 0 },
+        ]}
+      >
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={styles.tabButton}
+            onPress={() => setActiveTab(tab.key)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.tabIcon,
+                {
+                  color:
+                    activeTab === tab.key
+                      ? themeColors.primary
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
+              {tab.icon}
+            </Text>
+            <Text
+              style={[
+                styles.tabText,
+                {
+                  color:
+                    activeTab === tab.key
+                      ? themeColors.primary
+                      : themeColors.textSecondary,
+                },
+                activeTab === tab.key && styles.activeTabText,
+              ]}
+            >
+              {tab.title}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+}

@@ -1,7 +1,3 @@
-import { createContext, useContext, useState } from "react";
-import * as SecureStore from "expo-secure-store";
-import { THEME_STORAGE_KEY } from "../config/StorageKeys";
-
 export const lightTheme = {
   dark: false,
   colors: {
@@ -52,47 +48,4 @@ export const darkTheme = {
     warning: "#ff9800",
     info: "#2196F3",
   },
-};
-
-const ThemeContext = createContext();
-
-export const ThemeProvider = ({ children, initialTheme = "light" }) => {
-  const [theme, setThemeState] = useState(initialTheme);
-
-  const saveThemePreference = async (newTheme) => {
-    try {
-      await SecureStore.setItemAsync(THEME_STORAGE_KEY, newTheme);
-      setThemeState(newTheme);
-    } catch (error) {
-      console.error("Error saving theme preference:", error);
-    }
-  };
-
-  const getCurrentTheme = () => {
-    return theme === "dark" ? darkTheme : lightTheme;
-  };
-
-  const themeColors = getCurrentTheme().colors;
-
-  const setTheme = (newTheme) => {
-    saveThemePreference(newTheme);
-  };
-
-  const value = {
-    theme,
-    themeColors,
-    setTheme,
-  };
-
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
-};
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
 };

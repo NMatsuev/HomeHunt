@@ -1,5 +1,5 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useTheme } from "../context/ThemeContext";
+import useThemeViewModel from "../viewModels/themeViewModel";
 
 export default function CustomAlert({
   visible,
@@ -11,7 +11,7 @@ export default function CustomAlert({
   confirmText = "Удалить",
   confirmStyle = "destructive",
 }) {
-  const { themeColors } = useTheme();
+  const { themeColors } = useThemeViewModel();
 
   const styles = createStyles(themeColors);
 

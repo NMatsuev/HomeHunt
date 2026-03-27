@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -8,18 +7,19 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
+import { useState } from "react";
 import { gStyle } from "../../styles/style";
-import { useLanguage } from "../../context/LanguageContext";
-import { useTheme } from "../../context/ThemeContext";
-import { useOffers } from "../../context/OffersContext";
+import useThemeViewModel from "../../viewModels/themeViewModel";
+import useOffersViewModel from "../../viewModels/offersViewModel";
+import useLanguageViewModel from "../../viewModels/languageViewModel";
 import { useNavigation } from "@react-navigation/native";
 import OfferForm from "../forms/OfferForm";
 
 export default function MainScreen() {
-  const { t } = useLanguage();
-  const { themeColors } = useTheme();
+  const { t } = useLanguageViewModel();
+  const { themeColors } = useThemeViewModel();
   const navigation = useNavigation();
-  const { offers, addOffer } = useOffers();
+  const { offers, addOffer } = useOffersViewModel();
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleAddOffer = (newOffer) => {
@@ -157,11 +157,11 @@ export default function MainScreen() {
             <Text
               style={[styles.modalBackText, { color: themeColors.primary }]}
             >
-              ← Назад
+              ← {t("mainScreen.back")}
             </Text>
           </TouchableOpacity>
           <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-            Добавить объявление
+            {t("mainScreen.add")}
           </Text>
           <View style={styles.modalPlaceholder} />
         </View>

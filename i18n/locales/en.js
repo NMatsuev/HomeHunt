@@ -13,6 +13,8 @@ export default {
     area: "{{value}} m²",
     floor: "{{current}}/{{total}} fl.",
     address: "{{address}}",
+    back: "Back",
+    add: "Add offer",
   },
   savedScreen: {
     title: "Saved",

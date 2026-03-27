@@ -1,11 +1,11 @@
 import { StyleSheet, View, Text } from "react-native";
 import { gStyle } from "../../styles/style";
-import { useTheme } from "../../context/ThemeContext";
-import { useLanguage } from "../../context/LanguageContext";
+import useThemeViewModel from "../../viewModels/themeViewModel";
+import useLanguageViewModel from "../../viewModels/languageViewModel";
 
 export default function SavedScreen() {
-  const { themeColors } = useTheme();
-  const { t } = useLanguage();
+  const { themeColors } = useThemeViewModel();
+  const { t } = useLanguageViewModel();
   const styles = createStyles(themeColors);
 
   return (
