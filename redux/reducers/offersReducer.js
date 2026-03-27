@@ -14,7 +14,7 @@ const initialState = {
 };
 
 const offersReducer = (state = initialState, action) => {
-  console.log("Reducer action:", action.type, action.payload); // ✅ Добавляем лог
+  console.log("Reducer action:", action.type, action.payload);
 
   switch (action.type) {
     case OFFERS_LOADING:

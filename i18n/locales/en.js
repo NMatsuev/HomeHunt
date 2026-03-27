@@ -5,6 +5,8 @@ export default {
     loading: "Loading...",
     error: "Error",
     retry: "Retry",
+    succes: "Success",
+    priceNotSpecified: "Price not specified",
   },
   mainScreen: {
     title: "Market Offers",
@@ -15,6 +17,13 @@ export default {
     address: "{{address}}",
     back: "Back",
     add: "Add offer",
+    offerAdded: "Offer added",
+    errorAddingOffer: "Error while adding an offer",
+    myOffers: "My offers",
+  },
+  adTypes: {
+    sale: "For sale",
+    rent: "For rent",
   },
   savedScreen: {
     title: "Saved",

@@ -5,7 +5,6 @@ import {
   LANGUAGE_SET,
 } from "../actions/languageActions";
 
-// ✅ Начальное состояние с дефолтными значениями
 const initialState = {
   currentLocale: "ru",
   availableLanguages: [

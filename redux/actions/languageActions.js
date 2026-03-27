@@ -2,7 +2,6 @@ import * as SecureStore from "expo-secure-store";
 import i18n from "../../i18n/i18n";
 import { LANGUAGE_STORAGE_KEY } from "../../config/StorageKeys";
 
-// Action Types
 export const LANGUAGE_LOADING = "LANGUAGE_LOADING";
 export const LANGUAGE_LOADED = "LANGUAGE_LOADED";
 export const LANGUAGE_ERROR = "LANGUAGE_ERROR";

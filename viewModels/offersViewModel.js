@@ -12,13 +12,11 @@ import { generateId } from "../utils/helpers";
 const useOffersViewModel = () => {
   const dispatch = useDispatch();
 
-  // ✅ Правильно получаем состояние - state это объект с полем offers
   const state = useSelector((state) => {
     console.log("Raw state from Redux:", state);
     return state;
   });
 
-  // ✅ Достаем offers из state
   const offers = state?.offers?.offers || [];
   const isLoading = state?.offers?.isLoading || false;
   const error = state?.offers?.error || null;
@@ -30,13 +28,11 @@ const useOffersViewModel = () => {
   console.log("Offers length:", offers.length);
   console.log("================================");
 
-  // Инициализация базы данных при первом запуске
   useEffect(() => {
     console.log("Initializing database from ViewModel...");
     dispatch(initializeDatabase());
   }, [dispatch]);
 
-  // Добавление нового предложения
   const addOffer = useCallback(
     async (offerData) => {
       try {
@@ -56,7 +52,6 @@ const useOffersViewModel = () => {
     [dispatch],
   );
 
-  // Обновление существующего предложения
   const updateOffer = useCallback(
     async (offer) => {
       try {
@@ -70,7 +65,6 @@ const useOffersViewModel = () => {
     [dispatch],
   );
 
-  // Удаление предложения
   const deleteOffer = useCallback(
     async (offerId) => {
       try {
@@ -84,7 +78,6 @@ const useOffersViewModel = () => {
     [dispatch],
   );
 
-  // Получение предложения по ID
   const getOfferById = useCallback(
     (offerId) => {
       return offers.find((offer) => offer.id === offerId);

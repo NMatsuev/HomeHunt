@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -6,43 +7,172 @@ import {
   Image,
   TouchableOpacity,
   Modal,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  Animated,
 } from "react-native";
-import { useState } from "react";
-import { gStyle } from "../../styles/style";
-import useThemeViewModel from "../../viewModels/themeViewModel";
-import useOffersViewModel from "../../viewModels/offersViewModel";
-import useLanguageViewModel from "../../viewModels/languageViewModel";
 import { useNavigation } from "@react-navigation/native";
-import OfferForm from "../forms/OfferForm";
+import { gStyle } from "../../styles/style";
+import useOffersViewModel from "../../viewModels/offersViewModel";
+import useThemeViewModel from "../../viewModels/themeViewModel";
+import useLanguageViewModel from "../../viewModels/languageViewModel";
+import useKufarViewModel from "../../viewModels/kufarViewModel";
+import OfferForm from "../../components/forms/OfferForm";
+import networkService from "../../services/networkService";
 
 export default function MainScreen() {
-  const { t } = useLanguageViewModel();
-  const { themeColors } = useThemeViewModel();
   const navigation = useNavigation();
-  const { offers, addOffer } = useOffersViewModel();
   const [modalVisible, setModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState("local"); // 'local' or 'kufar'
+  const [refreshing, setRefreshing] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [showOfflineBanner, setShowOfflineBanner] = useState(false);
+  const [showOnlineBanner, setShowOnlineBanner] = useState(false);
 
-  const handleAddOffer = (newOffer) => {
-    addOffer(newOffer);
-    setModalVisible(false);
+  // Анимация для банера
+  const bannerAnim = useState(new Animated.Value(0))[0];
+
+  // Локальные объявления
+  const {
+    offers,
+    isLoading: localLoading,
+    addOffer,
+    totalCount: localCount,
+  } = useOffersViewModel();
+
+  // Объявления из Kufar
+  const {
+    ads: kufarAds,
+    isLoading: kufarLoading,
+    loadAds,
+    refreshAds,
+  } = useKufarViewModel();
+
+  const { themeColors } = useThemeViewModel();
+  const { t } = useLanguageViewModel();
+
+  // Показать баннер с анимацией
+  const showBanner = (type, setShowFunction) => {
+    setShowFunction(true);
+    Animated.sequence([
+      Animated.timing(bannerAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.delay(3000),
+      Animated.timing(bannerAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowFunction(false);
+    });
+  };
+
+  // Мониторинг интернет-соединения
+  useEffect(() => {
+    let wasOnline = true;
+
+    const unsubscribe = networkService.addListener((connected) => {
+      const wasConnected = isOnline;
+      setIsOnline(connected);
+
+      // Показываем баннер при потере соединения
+      if (!connected && wasConnected) {
+        setShowOfflineBanner(true);
+        Animated.sequence([
+          Animated.timing(bannerAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.delay(3000),
+          Animated.timing(bannerAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setShowOfflineBanner(false);
+        });
+      }
+
+      // Показываем баннер при восстановлении соединения
+      if (connected && !wasConnected) {
+        showBanner("online", setShowOnlineBanner);
+        // Если на вкладке Kufar, автоматически обновляем данные
+        if (activeTab === "kufar") {
+          refreshAds({ limit: 10 });
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [isOnline, activeTab]);
+
+  // Загружаем объявления Kufar при переключении вкладки
+  useEffect(() => {
+    if (
+      activeTab === "kufar" &&
+      kufarAds.length === 0 &&
+      !kufarLoading &&
+      isOnline
+    ) {
+      loadAds({ limit: 10 });
+    } else if (activeTab === "kufar" && !isOnline && kufarAds.length === 0) {
+      // Если нет интернета и нет кэша, пробуем загрузить из кэша
+      loadAds({ limit: 10 });
+    }
+  }, [activeTab, kufarAds.length, kufarLoading, loadAds, isOnline]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (activeTab === "local") {
+      // Здесь можно добавить обновление локальных объявлений
+    } else {
+      if (isOnline) {
+        await refreshAds({ limit: 10 });
+      } else {
+        Alert.alert(
+          "Нет интернета",
+          "Подключитесь к интернету для обновления данных",
+        );
+      }
+    }
+    setRefreshing(false);
+  };
+
+  const handleAddOffer = async (newOffer) => {
+    const result = await addOffer(newOffer);
+    if (result.success) {
+      setModalVisible(false);
+      Alert.alert(t("common.success"), t("mainScreen.offerAdded"));
+    } else {
+      Alert.alert(
+        t("common.error"),
+        result.error || t("mainScreen.errorAddingOffer"),
+      );
+    }
   };
 
   const renderOffer = ({ item }) => (
     <TouchableOpacity
       style={[styles.offerCard, { backgroundColor: themeColors.card }]}
       activeOpacity={0.7}
-      onPress={() =>
-        navigation.navigate("OfferDetails", {
-          offer: item,
-        })
-      }
+      onPress={() => navigation.navigate("OfferDetails", { offer: item })}
     >
       <View style={styles.imageContainer}>
         <Image source={item.image} style={styles.image} resizeMode="cover" />
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={[styles.title, { color: themeColors.text }]}>
+        <Text
+          style={[styles.title, { color: themeColors.text }]}
+          numberOfLines={1}
+        >
           {item.title}
         </Text>
 
@@ -57,29 +187,27 @@ export default function MainScreen() {
             ]}
           >
             <Text style={[styles.badgeText, { color: themeColors.primary }]}>
-              {t("mainScreen.rooms", { count: item.rooms })}
+              {item.type || t("mainScreen.rooms", { count: item.rooms })}
             </Text>
           </View>
         </View>
 
         <View style={styles.detailsRow}>
-          <View style={styles.detailItem}>
-            <Text
-              style={[styles.detailText, { color: themeColors.textSecondary }]}
-            >
-              {t("mainScreen.area", { value: item.area })}
-            </Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text
-              style={[styles.detailText, { color: themeColors.textSecondary }]}
-            >
-              {t("mainScreen.floor", {
-                current: item.floor,
-                total: item.floorCount,
-              })}
-            </Text>
-          </View>
+          <Text
+            style={[styles.detailText, { color: themeColors.textSecondary }]}
+          >
+            {item.area > 0 ? t("mainScreen.area", { value: item.area }) : "—"}
+          </Text>
+          <Text
+            style={[styles.detailText, { color: themeColors.textSecondary }]}
+          >
+            {item.floor && item.floorCount
+              ? t("mainScreen.floor", {
+                  current: item.floor,
+                  total: item.floorCount,
+                })
+              : "—"}
+          </Text>
         </View>
 
         <View style={styles.addressContainer}>
@@ -101,10 +229,61 @@ export default function MainScreen() {
     </TouchableOpacity>
   );
 
+  const isLoading = activeTab === "local" ? localLoading : kufarLoading;
+  const data = activeTab === "local" ? offers : kufarAds;
+  const totalCount = activeTab === "local" ? localCount : kufarAds.length;
+
   const styles = createStyles(themeColors);
 
   return (
     <View style={styles.container}>
+      {/* Баннеры уведомлений */}
+      {showOfflineBanner && (
+        <Animated.View
+          style={[
+            styles.banner,
+            styles.offlineBanner,
+            {
+              transform: [
+                {
+                  translateY: bannerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-100, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={styles.bannerText}>
+            🔴 Нет интернет-соединения. Показаны сохраненные данные.
+          </Text>
+        </Animated.View>
+      )}
+
+      {showOnlineBanner && (
+        <Animated.View
+          style={[
+            styles.banner,
+            styles.onlineBanner,
+            {
+              transform: [
+                {
+                  translateY: bannerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-100, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={styles.bannerText}>
+            ✅ Интернет-соединение восстановлено. Данные обновлены.
+          </Text>
+        </Animated.View>
+      )}
+
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <Text style={[gStyle.title, { color: themeColors.text }]}>
@@ -117,25 +296,116 @@ export default function MainScreen() {
             <Text style={styles.addButtonText}>+</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Переключатель источников */}
+        <View style={styles.tabSwitch}>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === "local" && styles.activeTabButton,
+            ]}
+            onPress={() => setActiveTab("local")}
+          >
+            <Text
+              style={[
+                styles.tabButtonText,
+                {
+                  color:
+                    activeTab === "local"
+                      ? themeColors.primary
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
+              {t("mainScreen.myOffers")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === "kufar" && styles.activeTabButton,
+            ]}
+            onPress={() => setActiveTab("kufar")}
+          >
+            <Text
+              style={[
+                styles.tabButtonText,
+                {
+                  color:
+                    activeTab === "kufar"
+                      ? themeColors.primary
+                      : themeColors.textSecondary,
+                },
+              ]}
+            >
+              Kufar
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <Text style={[styles.counter, { color: themeColors.textSecondary }]}>
-          {t("mainScreen.found", { count: offers.length })}
+          {t("mainScreen.found", { count: totalCount })}
         </Text>
+
+        {/* Индикатор статуса соединения (маленький) */}
+        <View style={styles.statusIndicator}>
+          <View
+            style={[
+              styles.statusDot,
+              { backgroundColor: isOnline ? "#4CAF50" : "#f44336" },
+            ]}
+          />
+          <Text
+            style={[styles.statusText, { color: themeColors.textSecondary }]}
+          >
+            {isOnline ? "Online" : "Offline"}
+          </Text>
+        </View>
       </View>
 
-      <FlatList
-        data={offers}
-        renderItem={renderOffer}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-        ItemSeparatorComponent={() => (
-          <View
-            style={[styles.separator, { backgroundColor: themeColors.border }]}
-          />
-        )}
-      />
+      {isLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={themeColors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderOffer}
+          keyExtractor={(item) => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          ItemSeparatorComponent={() => (
+            <View
+              style={[
+                styles.separator,
+                { backgroundColor: themeColors.border },
+              ]}
+            />
+          )}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[themeColors.primary]}
+              tintColor={themeColors.primary}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text
+                style={[styles.emptyText, { color: themeColors.textSecondary }]}
+              >
+                {activeTab === "local"
+                  ? "Нет сохраненных объявлений"
+                  : !isOnline && kufarAds.length === 0
+                    ? "Нет интернета и нет сохраненных объявлений"
+                    : "Нет объявлений из Kufar"}
+              </Text>
+            </View>
+          }
+        />
+      )}
 
-      {/* Модальное окно на весь экран */}
       <Modal
         animationType="slide"
         visible={modalVisible}
@@ -165,7 +435,6 @@ export default function MainScreen() {
           </Text>
           <View style={styles.modalPlaceholder} />
         </View>
-
         <OfferForm
           onSubmit={handleAddOffer}
           onCancel={() => setModalVisible(false)}
@@ -181,6 +450,34 @@ const createStyles = (colors) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    banner: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 1000,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    offlineBanner: {
+      backgroundColor: "#f44336",
+    },
+    onlineBanner: {
+      backgroundColor: "#4CAF50",
+    },
+    bannerText: {
+      color: "#fff",
+      fontSize: 14,
+      fontFamily: "mt-bold",
+      textAlign: "center",
+    },
+    centered: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
     },
     header: {
       paddingHorizontal: 16,
@@ -202,10 +499,7 @@ const createStyles = (colors) =>
       justifyContent: "center",
       alignItems: "center",
       shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
@@ -215,9 +509,44 @@ const createStyles = (colors) =>
       fontSize: 24,
       fontWeight: "bold",
     },
+    tabSwitch: {
+      flexDirection: "row",
+      marginTop: 12,
+      backgroundColor: colors.inputBackground,
+      borderRadius: 8,
+      padding: 4,
+    },
+    tabButton: {
+      flex: 1,
+      paddingVertical: 8,
+      alignItems: "center",
+      borderRadius: 6,
+    },
+    activeTabButton: {
+      backgroundColor: colors.card,
+    },
+    tabButtonText: {
+      fontSize: 14,
+      fontFamily: "mt-bold",
+    },
     counter: {
       fontSize: 14,
-      marginTop: 4,
+      marginTop: 8,
+      fontFamily: "mt-light",
+    },
+    statusIndicator: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 8,
+      gap: 6,
+    },
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    statusText: {
+      fontSize: 11,
       fontFamily: "mt-light",
     },
     listContainer: {
@@ -231,10 +560,7 @@ const createStyles = (colors) =>
       borderRadius: 12,
       padding: 12,
       shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 3,
       elevation: 3,
@@ -280,44 +606,34 @@ const createStyles = (colors) =>
     },
     detailsRow: {
       flexDirection: "row",
+      justifyContent: "space-between",
       marginBottom: 8,
-    },
-    detailItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginRight: 16,
-    },
-    detailIcon: {
-      fontSize: 14,
-      marginRight: 4,
     },
     detailText: {
       fontSize: 13,
       fontFamily: "mt-light",
     },
     addressContainer: {
-      flexDirection: "row",
-      alignItems: "center",
       marginBottom: 6,
-    },
-    addressIcon: {
-      fontSize: 14,
-      marginRight: 4,
     },
     address: {
       fontSize: 12,
       fontFamily: "mt-light",
-      flex: 1,
     },
     description: {
       fontSize: 12,
       fontFamily: "mt-light",
       lineHeight: 16,
     },
-    // Стили для модального окна на весь экран
-    modalContainer: {
+    emptyContainer: {
       flex: 1,
-      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingTop: 50,
+    },
+    emptyText: {
+      fontSize: 16,
+      fontFamily: "mt-light",
     },
     modalHeader: {
       flexDirection: "row",

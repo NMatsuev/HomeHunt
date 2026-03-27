@@ -4,7 +4,9 @@ export default {
   common: {
     loading: "Загрузка...",
     error: "Ошибка",
+    succes: "Успешно",
     retry: "Повторить",
+    priceNotSpecified: "Цена не указана",
   },
   mainScreen: {
     title: "Предложения на рынке",
@@ -15,6 +17,13 @@ export default {
     address: "{{address}}",
     back: "Назад",
     add: "Добавить объявление",
+    offerAdded: "Объявление добавлено",
+    errorAddingOffer: "Ошибка при добавлении объявления",
+    myOffers: "Мои объявления",
+  },
+  adTypes: {
+    sale: "Продажа",
+    rent: "Аренда",
   },
   savedScreen: {
     title: "Сохранено",

@@ -19,7 +19,6 @@ const useLanguageViewModel = () => {
   const error = languageState?.error || null;
   const isInitialized = languageState?.isInitialized || false;
 
-  // ✅ Используем ref для предотвращения бесконечного цикла
   const initializedRef = useRef(false);
 
   useEffect(() => {
@@ -30,7 +29,6 @@ const useLanguageViewModel = () => {
     }
   }, [dispatch, isInitialized]);
 
-  // ✅ t функция без зависимости от currentLocale
   const t = useCallback((key, options = {}) => {
     try {
       if (i18n && typeof i18n.t === "function") {
@@ -41,7 +39,7 @@ const useLanguageViewModel = () => {
       console.warn(`Translation error for key "${key}":`, error);
       return key;
     }
-  }, []); // Пустой массив
+  }, []);
 
   const setLocale = useCallback(
     async (newLocale) => {

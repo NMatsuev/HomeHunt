@@ -2,13 +2,11 @@ import * as SecureStore from "expo-secure-store";
 import { THEME_STORAGE_KEY } from "../../config/StorageKeys";
 import { lightTheme, darkTheme } from "../../utils/themes";
 
-// Action Types
 export const THEME_LOADING = "THEME_LOADING";
 export const THEME_LOADED = "THEME_LOADED";
 export const THEME_ERROR = "THEME_ERROR";
 export const THEME_SET = "THEME_SET";
 
-// Инициализация темы
 export const initializeTheme = () => async (dispatch) => {
   try {
     dispatch({ type: THEME_LOADING });
@@ -39,7 +37,6 @@ export const initializeTheme = () => async (dispatch) => {
   }
 };
 
-// Установка темы
 export const setTheme = (themeName) => async (dispatch) => {
   try {
     console.log("Setting theme to:", themeName);

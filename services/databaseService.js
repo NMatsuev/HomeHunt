@@ -45,7 +45,6 @@ class DatabaseService {
 
   async addOffer(offer) {
     try {
-      // ✅ Исправляем количество параметров (было 10, а нужно 12)
       await this.db.runAsync(
         `INSERT INTO offers (
           id, title, price, rooms, area, floor, 
