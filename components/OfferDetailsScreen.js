@@ -16,13 +16,13 @@ import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
 
 export default function OfferDetailsScreen({ route, navigation }) {
-  const { offer } = route.params;
+  const { offer, activeTab } = route.params;
   const { themeColors } = useThemeViewModel();
   const { t } = useLanguageViewModel();
   const { deleteOffer, updateOffer } = useOffersViewModel();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
-
+  const isKufarOffer = activeTab === "kufar";
   const handleDelete = () => {
     setAlertVisible(true);
   };
@@ -200,34 +200,35 @@ export default function OfferDetailsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Кнопки действий */}
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              styles.editButton,
-              { backgroundColor: themeColors.primary },
-            ]}
-            onPress={() => setEditModalVisible(true)}
-          >
-            <Text style={styles.actionButtonText}>
-              ✏️ {t("offerDetails.edit")}
-            </Text>
-          </TouchableOpacity>
+        {!isKufarOffer && (
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                styles.editButton,
+                { backgroundColor: themeColors.primary },
+              ]}
+              onPress={() => setEditModalVisible(true)}
+            >
+              <Text style={styles.actionButtonText}>
+                ✏️ {t("offerDetails.edit")}
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              styles.deleteButton,
-              { backgroundColor: themeColors.error },
-            ]}
-            onPress={handleDelete}
-          >
-            <Text style={styles.actionButtonText}>
-              🗑️ {t("offerDetails.delete")}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                styles.deleteButton,
+                { backgroundColor: themeColors.error },
+              ]}
+              onPress={handleDelete}
+            >
+              <Text style={styles.actionButtonText}>
+                🗑️ {t("offerDetails.delete")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
 
       {/* Кастомный Alert для подтверждения удаления */}

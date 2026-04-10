@@ -10,7 +10,7 @@ export const useLoadResources = () => {
   useEffect(() => {
     async function loadResources() {
       try {
-        const [fonts, savedTheme, savedLanguage] = await Promise.all([
+        const [fonts] = await Promise.all([
           Font.loadAsync({
             "mt-bold": require("../assets/fonts/Montserrat-Bold.ttf"),
             "mt-light": require("../assets/fonts/Montserrat-Light.ttf"),

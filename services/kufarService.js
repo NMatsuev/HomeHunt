@@ -1,7 +1,4 @@
 import axios from "axios";
-import sqliteCacheService from "./sqliteCacheService";
-
-const CACHE_KEY = "kufar_ads";
 
 class KufarService {
   constructor() {
@@ -10,36 +7,15 @@ class KufarService {
       baseURL: this.baseURL,
       timeout: 10000,
     });
-    sqliteCacheService.initDatabase();
   }
 
   async searchAds(params = {}) {
-    const { forceRefresh = false, isOnline = true, ...searchParams } = params;
-
-    // Если нет интернета - берем из кэша
-    if (!isOnline) {
-      const cached = await sqliteCacheService.get(CACHE_KEY);
-      if (cached && cached.length > 0) {
-        console.log(`Offline mode: using cache (${cached.length} ads)`);
-        return {
-          success: true,
-          data: cached,
-          fromCache: true,
-          offline: true,
-          total: cached.length,
-        };
-      }
-      return { success: false, error: "Нет интернета и нет кэша", data: [] };
-    }
-
-    // Если есть интернет - всегда берем свежие данные
-    // (forceRefresh или обычный запрос - все равно идем в API)
     try {
       const queryParams = {
         login: process.env.EXPO_PUBLIC_EMAIL,
         token: process.env.EXPO_PUBLIC_API_KEY,
-        category_id: searchParams.category_id || "1000",
-        limit: searchParams.limit || 20,
+        category_id: params.category_id || "1000",
+        limit: params.limit || 20,
       };
 
       console.log("Fetching fresh data from Kufar API...");
@@ -50,14 +26,9 @@ class KufarService {
           this.transformToAppFormat(ad),
         );
 
-        // Сохраняем в кэш
-        await sqliteCacheService.set(CACHE_KEY, transformedData, 86400);
-        console.log(`Saved ${transformedData.length} ads to cache`);
-
         return {
           success: true,
           data: transformedData,
-          fromCache: false,
           total: transformedData.length,
         };
       }
@@ -65,38 +36,8 @@ class KufarService {
       return { success: false, error: "API error", data: [] };
     } catch (error) {
       console.error("Kufar API error:", error);
-
-      // При ошибке API пробуем кэш
-      const cached = await sqliteCacheService.get(CACHE_KEY);
-      if (cached && cached.length > 0) {
-        console.log(`API error, using cached data (${cached.length} ads)`);
-        return {
-          success: true,
-          data: cached,
-          fromCache: true,
-          error: error.message,
-          total: cached.length,
-        };
-      }
-
       return { success: false, error: error.message, data: [] };
     }
-  }
-
-  // Принудительное обновление (для pull-to-refresh)
-  async refreshAds(params = {}) {
-    return this.searchAds({ ...params, forceRefresh: true });
-  }
-
-  // Очистка кэша
-  async clearCache() {
-    return sqliteCacheService.delete(CACHE_KEY);
-  }
-
-  // Проверка наличия кэша
-  async hasCache() {
-    const cached = await sqliteCacheService.get(CACHE_KEY);
-    return cached && cached.length > 0;
   }
 
   transformToAppFormat(kufarAd) {

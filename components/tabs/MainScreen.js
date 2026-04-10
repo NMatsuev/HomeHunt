@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -17,7 +17,7 @@ import { gStyle } from "../../styles/style";
 import useOffersViewModel from "../../viewModels/offersViewModel";
 import useThemeViewModel from "../../viewModels/themeViewModel";
 import useLanguageViewModel from "../../viewModels/languageViewModel";
-import useKufarViewModel from "../../viewModels/kufarViewModel";
+import kufarCacheViewModel from "../../viewModels/kufarCacheViewModel";
 import OfferForm from "../../components/forms/OfferForm";
 import networkService from "../../services/networkService";
 
@@ -33,7 +33,31 @@ export default function MainScreen() {
   // Анимация для банера
   const bannerAnim = useState(new Animated.Value(0))[0];
 
-  // Локальные объявления
+  const showBanner = useCallback(
+    (type) => {
+      const setShowFunction =
+        type === "offline" ? setShowOfflineBanner : setShowOnlineBanner;
+      setShowFunction(true);
+
+      Animated.sequence([
+        Animated.timing(bannerAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(3000),
+        Animated.timing(bannerAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowFunction(false);
+      });
+    },
+    [bannerAnim],
+  );
+
   const {
     offers,
     isLoading: localLoading,
@@ -41,71 +65,48 @@ export default function MainScreen() {
     totalCount: localCount,
   } = useOffersViewModel();
 
-  // Объявления из Kufar
+  // Объявления из Kufar с кэшированием
   const {
     ads: kufarAds,
     isLoading: kufarLoading,
+    fromCache,
+    lastUpdated,
     loadAds,
     refreshAds,
-  } = useKufarViewModel();
+  } = kufarCacheViewModel();
 
   const { themeColors } = useThemeViewModel();
   const { t } = useLanguageViewModel();
 
-  // Показать баннер с анимацией
-  const showBanner = (type, setShowFunction) => {
-    setShowFunction(true);
-    Animated.sequence([
-      Animated.timing(bannerAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.delay(3000),
-      Animated.timing(bannerAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setShowFunction(false);
-    });
-  };
+  // Инициализация: загружаем при старте
+  useEffect(() => {
+    const init = async () => {
+      const isConnected = await networkService.checkConnection();
+      setIsOnline(isConnected);
+
+      // Загружаем данные для Kufar (автоматически решит: кэш или API)
+      await loadAds({ limit: 10 }, isConnected);
+    };
+
+    init();
+  }, []);
 
   // Мониторинг интернет-соединения
   useEffect(() => {
-    let wasOnline = true;
-
     const unsubscribe = networkService.addListener((connected) => {
       const wasConnected = isOnline;
       setIsOnline(connected);
 
-      // Показываем баннер при потере соединения
       if (!connected && wasConnected) {
-        setShowOfflineBanner(true);
-        Animated.sequence([
-          Animated.timing(bannerAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.delay(3000),
-          Animated.timing(bannerAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setShowOfflineBanner(false);
-        });
+        showBanner("offline", setShowOfflineBanner);
       }
 
-      // Показываем баннер при восстановлении соединения
       if (connected && !wasConnected) {
         showBanner("online", setShowOnlineBanner);
-        // Если на вкладке Kufar, автоматически обновляем данные
+
+        // При восстановлении сети обновляем если на вкладке Kufar
         if (activeTab === "kufar") {
-          refreshAds({ limit: 10 });
+          loadAds({ limit: 10 }, true);
         }
       }
     });
@@ -113,35 +114,24 @@ export default function MainScreen() {
     return unsubscribe;
   }, [isOnline, activeTab]);
 
-  // Загружаем объявления Kufar при переключении вкладки
+  // При переключении на вкладку Kufar
   useEffect(() => {
-    if (
-      activeTab === "kufar" &&
-      kufarAds.length === 0 &&
-      !kufarLoading &&
-      isOnline
-    ) {
-      loadAds({ limit: 10 });
-    } else if (activeTab === "kufar" && !isOnline && kufarAds.length === 0) {
-      // Если нет интернета и нет кэша, пробуем загрузить из кэша
-      loadAds({ limit: 10 });
+    if (activeTab === "kufar" && kufarAds.length === 0) {
+      loadAds({ limit: 10 }, isOnline);
     }
-  }, [activeTab, kufarAds.length, kufarLoading, loadAds, isOnline]);
+  }, [activeTab]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    if (activeTab === "local") {
-      // Здесь можно добавить обновление локальных объявлений
-    } else {
+
+    if (activeTab === "kufar") {
       if (isOnline) {
-        await refreshAds({ limit: 10 });
+        await refreshAds({ limit: 10 }, true);
       } else {
-        Alert.alert(
-          "Нет интернета",
-          "Подключитесь к интернету для обновления данных",
-        );
+        Alert.alert(t("common.offline"), t("mainScreen.cantRefreshOffline"));
       }
     }
+
     setRefreshing(false);
   };
 
@@ -162,7 +152,12 @@ export default function MainScreen() {
     <TouchableOpacity
       style={[styles.offerCard, { backgroundColor: themeColors.card }]}
       activeOpacity={0.7}
-      onPress={() => navigation.navigate("OfferDetails", { offer: item })}
+      onPress={() =>
+        navigation.navigate("OfferDetails", {
+          offer: item,
+          activeTab: activeTab,
+        })
+      }
     >
       <View style={styles.imageContainer}>
         <Image source={item.image} style={styles.image} resizeMode="cover" />
@@ -255,9 +250,7 @@ export default function MainScreen() {
             },
           ]}
         >
-          <Text style={styles.bannerText}>
-            🔴 Нет интернет-соединения. Показаны сохраненные данные.
-          </Text>
+          <Text style={styles.bannerText}>{t("mainScreen.offline")}</Text>
         </Animated.View>
       )}
 
@@ -278,9 +271,7 @@ export default function MainScreen() {
             },
           ]}
         >
-          <Text style={styles.bannerText}>
-            ✅ Интернет-соединение восстановлено. Данные обновлены.
-          </Text>
+          <Text style={styles.bannerText}>{t("mainScreen.online")}</Text>
         </Animated.View>
       )}
 

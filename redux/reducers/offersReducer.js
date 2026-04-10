@@ -25,7 +25,6 @@ const offersReducer = (state = initialState, action) => {
       };
 
     case OFFERS_LOADED:
-      // ✅ Убедитесь, что payload это массив
       const loadedOffers = Array.isArray(action.payload) ? action.payload : [];
       console.log("Setting offers in reducer:", loadedOffers.length);
       return {

@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  loadOffers,
   addOffer as addOfferAction,
   updateOffer as updateOfferAction,
   deleteOffer as deleteOfferAction,

@@ -7,6 +7,8 @@ export default {
     retry: "Retry",
     succes: "Success",
     priceNotSpecified: "Price not specified",
+    offline:
+      "No internet connection, please connect to the internet to update your data",
   },
   mainScreen: {
     title: "Market Offers",
@@ -20,6 +22,9 @@ export default {
     offerAdded: "Offer added",
     errorAddingOffer: "Error while adding an offer",
     myOffers: "My offers",
+    offline: "No internet connection. Saved data is displayed.",
+    online:
+      "The internet connection has been restored. The data has been updated.",
   },
   adTypes: {
     sale: "For sale",
