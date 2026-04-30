@@ -8,12 +8,14 @@ import {
   ScrollView,
   Modal,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import useThemeViewModel from "../viewModels/themeViewModel";
 import useLanguageViewModel from "../viewModels/languageViewModel";
 import useOffersViewModel from "../viewModels/offersViewModel";
 import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
+import OfferImage from "../components/OfferImage";
 
 export default function OfferDetailsScreen({ route, navigation }) {
   const { offer, activeTab } = route.params;
@@ -22,7 +24,14 @@ export default function OfferDetailsScreen({ route, navigation }) {
   const { deleteOffer, updateOffer } = useOffersViewModel();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
   const isKufarOffer = activeTab === "kufar";
+
+  // Получаем URL изображения
+  const imageUrl = offer.imageUrl;
+
   const handleDelete = () => {
     setAlertVisible(true);
   };
@@ -40,6 +49,62 @@ export default function OfferDetailsScreen({ route, navigation }) {
   };
 
   const styles = createStyles(themeColors);
+
+  // Компонент изображения в зависимости от типа объявления
+  const renderImage = () => {
+    // Для Kufar используем обычный Image
+    if (isKufarOffer) {
+      return (
+        <View style={styles.imageWrapper}>
+          {imageLoading && (
+            <View style={styles.imageLoader}>
+              <ActivityIndicator size="large" color={themeColors.primary} />
+            </View>
+          )}
+          <Image
+            source={offer.image}
+            style={styles.image}
+            resizeMode="cover"
+            onLoadStart={() => {
+              setImageLoading(true);
+              setImageError(false);
+            }}
+            onLoadEnd={() => setImageLoading(false)}
+            onError={(e) => {
+              console.error("Kufar image load error:", e.nativeEvent.error);
+              setImageError(true);
+              setImageLoading(false);
+            }}
+          />
+          {imageError && (
+            <View style={styles.imageErrorContainer}>
+              <Text
+                style={[
+                  styles.imageErrorText,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
+                📷 {t("offerDetails.imageLoadError")}
+              </Text>
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    // Для локальных объявлений используем OfferImage с оптимизацией
+    return (
+      <View style={styles.imageWrapper}>
+        <OfferImage
+          imageUrl={typeof imageUrl === "string" ? imageUrl : null}
+          style={styles.image}
+          width={400}
+          height={250}
+          optimized={true}
+        />
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -61,9 +126,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Изображение */}
-        <View style={styles.imageContainer}>
-          <Image source={offer.image} style={styles.image} resizeMode="cover" />
-        </View>
+        <View style={styles.imageContainer}>{renderImage()}</View>
 
         {/* Основная информация */}
         <View style={[styles.card, { backgroundColor: themeColors.card }]}>
@@ -82,7 +145,9 @@ export default function OfferDetailsScreen({ route, navigation }) {
               ]}
             >
               <Text style={[styles.badgeText, { color: themeColors.primary }]}>
-                {t("mainScreen.rooms", { count: offer.rooms })}
+                {offer.rooms
+                  ? t("mainScreen.rooms", { count: offer.rooms })
+                  : t("offerDetails.noRooms")}
               </Text>
             </View>
           </View>
@@ -109,7 +174,9 @@ export default function OfferDetailsScreen({ route, navigation }) {
                       { color: themeColors.text },
                     ]}
                   >
-                    {t("offerDetails.areaValue", { value: offer.area })}
+                    {offer.area > 0
+                      ? t("offerDetails.areaValue", { value: offer.area })
+                      : "—"}
                   </Text>
                 </View>
               </View>
@@ -130,10 +197,12 @@ export default function OfferDetailsScreen({ route, navigation }) {
                       { color: themeColors.text },
                     ]}
                   >
-                    {t("offerDetails.floorValue", {
-                      current: offer.floor,
-                      total: offer.floorCount,
-                    })}
+                    {offer.floor && offer.floorCount
+                      ? t("offerDetails.floorValue", {
+                          current: offer.floor,
+                          total: offer.floorCount,
+                        })
+                      : "—"}
                   </Text>
                 </View>
               </View>
@@ -147,7 +216,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
             </Text>
             <View style={styles.addressContainer}>
               <Text style={[styles.address, { color: themeColors.text }]}>
-                {offer.address}
+                {offer.address || "—"}
               </Text>
             </View>
           </View>
@@ -160,7 +229,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
             <Text
               style={[styles.description, { color: themeColors.textSecondary }]}
             >
-              {offer.description}
+              {offer.description || t("offerDetails.noDescription")}
             </Text>
           </View>
 
@@ -183,19 +252,36 @@ export default function OfferDetailsScreen({ route, navigation }) {
                   {offer.id}
                 </Text>
               </View>
-              <View style={styles.infoRow}>
-                <Text
-                  style={[
-                    styles.infoLabel,
-                    { color: themeColors.textSecondary },
-                  ]}
-                >
-                  {t("offerDetails.date")}:
-                </Text>
-                <Text style={[styles.infoValue, { color: themeColors.text }]}>
-                  {new Date().toLocaleDateString()}
-                </Text>
-              </View>
+              {offer.created_at && (
+                <View style={styles.infoRow}>
+                  <Text
+                    style={[
+                      styles.infoLabel,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {t("offerDetails.date")}:
+                  </Text>
+                  <Text style={[styles.infoValue, { color: themeColors.text }]}>
+                    {new Date(offer.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              )}
+              {offer.userEmail && !isKufarOffer && (
+                <View style={styles.infoRow}>
+                  <Text
+                    style={[
+                      styles.infoLabel,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {t("offerDetails.author")}:
+                  </Text>
+                  <Text style={[styles.infoValue, { color: themeColors.text }]}>
+                    {offer.userEmail}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -329,14 +415,54 @@ const createStyles = (colors) =>
     },
     imageContainer: {
       width: "100%",
-      height: 200,
+      height: 250,
       borderRadius: 12,
       overflow: "hidden",
       marginBottom: 16,
+      backgroundColor: colors.inputBackground,
+    },
+    imageWrapper: {
+      flex: 1,
+      position: "relative",
     },
     image: {
       width: "100%",
       height: "100%",
+    },
+    imageLoader: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.inputBackground,
+      zIndex: 1,
+    },
+    imageErrorContainer: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.inputBackground,
+    },
+    imageErrorText: {
+      fontSize: 14,
+      fontFamily: "mt-light",
+    },
+    imagePlaceholder: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.inputBackground,
+    },
+    imagePlaceholderText: {
+      fontSize: 16,
+      fontFamily: "mt-light",
     },
     card: {
       borderRadius: 12,

@@ -36,9 +36,15 @@
           ]
         }
       ],
+      ["expo-notifications",
+        {
+          "icon": "./assets/logo.png",
+          "color": "#ffffff"
+        }],
       "expo-secure-store",
       "expo-sqlite",
-      "@react-native-firebase/app"
+      "@react-native-firebase/app",
+      "@react-native-community/datetimepicker"
     ]
   }
 }
