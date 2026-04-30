@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addOffer as addOfferAction,
@@ -6,10 +6,10 @@ import {
   deleteOffer as deleteOfferAction,
   initializeDatabase,
 } from "../redux/actions/offersActions";
-import { generateId } from "../utils/helpers";
 
 const useOffersViewModel = () => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const state = useSelector((state) => {
     console.log("Raw state from Redux:", state);
@@ -21,23 +21,24 @@ const useOffersViewModel = () => {
   const error = state?.offers?.error || null;
 
   console.log("=== OFFERS VIEW MODEL DEBUG ===");
-  console.log("Raw state:", state);
-  console.log("State.offers:", state?.offers);
   console.log("Offers array:", offers);
   console.log("Offers length:", offers.length);
   console.log("================================");
 
   useEffect(() => {
-    console.log("Initializing database from ViewModel...");
+    console.log("Initializing Firestore from ViewModel...");
     dispatch(initializeDatabase());
   }, [dispatch]);
 
   const addOffer = useCallback(
     async (offerData) => {
       try {
+        setLoading(true);
+        // Firestore сам генерирует ID, не нужно создавать его здесь
         const newOffer = {
           ...offerData,
-          id: generateId(),
+          // Для числовой фильтрации добавляем priceValue
+          priceValue: parseInt(offerData.price.replace(/[^\d]/g, "")) || 0,
         };
 
         console.log("Adding offer:", newOffer);
@@ -46,6 +47,8 @@ const useOffersViewModel = () => {
       } catch (error) {
         console.error("Error adding offer:", error);
         return { success: false, error: error.message };
+      } finally {
+        setLoading(false);
       }
     },
     [dispatch],
@@ -54,11 +57,18 @@ const useOffersViewModel = () => {
   const updateOffer = useCallback(
     async (offer) => {
       try {
-        const result = await dispatch(updateOfferAction(offer));
+        setLoading(true);
+        const updatedOffer = {
+          ...offer,
+          priceValue: parseInt(offer.price.replace(/[^\d]/g, "")) || 0,
+        };
+        const result = await dispatch(updateOfferAction(updatedOffer));
         return result;
       } catch (error) {
         console.error("Error updating offer:", error);
         return { success: false, error: error.message };
+      } finally {
+        setLoading(false);
       }
     },
     [dispatch],
@@ -67,11 +77,14 @@ const useOffersViewModel = () => {
   const deleteOffer = useCallback(
     async (offerId) => {
       try {
+        setLoading(true);
         const result = await dispatch(deleteOfferAction(offerId));
         return result;
       } catch (error) {
         console.error("Error deleting offer:", error);
         return { success: false, error: error.message };
+      } finally {
+        setLoading(false);
       }
     },
     [dispatch],
@@ -84,21 +97,22 @@ const useOffersViewModel = () => {
     [offers],
   );
 
-  // Получение отфильтрованных предложений
   const getFilteredOffers = useCallback(
     (filters = {}) => {
       let filtered = [...offers];
 
       if (filters.minPrice) {
         filtered = filtered.filter((offer) => {
-          const price = parseInt(offer.price.replace(/[^\d]/g, ""));
+          const price =
+            offer.priceValue || parseInt(offer.price.replace(/[^\d]/g, ""));
           return price >= filters.minPrice;
         });
       }
 
       if (filters.maxPrice) {
         filtered = filtered.filter((offer) => {
-          const price = parseInt(offer.price.replace(/[^\d]/g, ""));
+          const price =
+            offer.priceValue || parseInt(offer.price.replace(/[^\d]/g, ""));
           return price <= filters.maxPrice;
         });
       }
@@ -123,7 +137,7 @@ const useOffersViewModel = () => {
 
   return {
     offers,
-    isLoading,
+    isLoading: isLoading || loading,
     error,
     addOffer,
     updateOffer,

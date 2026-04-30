@@ -1,4 +1,4 @@
-import databaseService from "../../services/databaseService";
+import firestoreService from "../../services/firestoreWebService";
 
 export const OFFERS_LOADING = "OFFERS_LOADING";
 export const OFFERS_LOADED = "OFFERS_LOADED";
@@ -7,23 +7,18 @@ export const OFFER_ADDED = "OFFER_ADDED";
 export const OFFER_UPDATED = "OFFER_UPDATED";
 export const OFFER_DELETED = "OFFER_DELETED";
 
-const INITIAL_OFFERS_DATA = [];
-
 export const initializeDatabase = () => async (dispatch) => {
   try {
-    console.log("Initializing database...");
+    console.log("Initializing Firestore...");
     dispatch({ type: OFFERS_LOADING });
 
-    // Инициализируем таблицу
-    await databaseService.initDatabase();
-
-    // Проверяем, есть ли данные в базе
-    const count = await databaseService.getOffersCount();
+    // Инициализируем соединение с Firestore
+    await firestoreService.initDatabase();
 
     // Загружаем все предложения
     await dispatch(loadOffers());
   } catch (error) {
-    console.error("Database initialization error:", error);
+    console.error("Firestore initialization error:", error);
     dispatch({ type: OFFERS_ERROR, payload: error.message });
   }
 };
@@ -31,10 +26,10 @@ export const initializeDatabase = () => async (dispatch) => {
 // Загрузка предложений
 export const loadOffers = () => async (dispatch) => {
   try {
-    console.log("Loading offers...");
+    console.log("Loading offers from Firestore...");
     dispatch({ type: OFFERS_LOADING });
-    const offers = await databaseService.getOffers();
-    console.log("Loaded offers from DB:", offers.length);
+    const offers = await firestoreService.getOffers();
+    console.log("Loaded offers from Firestore:", offers.length);
     console.log("First offer:", offers[0]?.title);
 
     dispatch({ type: OFFERS_LOADED, payload: offers });
@@ -48,9 +43,11 @@ export const loadOffers = () => async (dispatch) => {
 // Добавление предложения
 export const addOffer = (offer) => async (dispatch) => {
   try {
-    await databaseService.addOffer(offer);
-    dispatch({ type: OFFER_ADDED, payload: offer });
-    return { success: true };
+    const result = await firestoreService.addOffer(offer);
+    // Получаем добавленное предложение с реальным ID из Firestore
+    const addedOffer = { ...offer, id: result.id };
+    dispatch({ type: OFFER_ADDED, payload: addedOffer });
+    return { success: true, id: result.id };
   } catch (error) {
     console.error("Error adding offer:", error);
     dispatch({ type: OFFERS_ERROR, payload: error.message });
@@ -61,7 +58,7 @@ export const addOffer = (offer) => async (dispatch) => {
 // Обновление предложения
 export const updateOffer = (offer) => async (dispatch) => {
   try {
-    await databaseService.updateOffer(offer);
+    await firestoreService.updateOffer(offer);
     dispatch({ type: OFFER_UPDATED, payload: offer });
     return { success: true };
   } catch (error) {
@@ -74,7 +71,7 @@ export const updateOffer = (offer) => async (dispatch) => {
 // Удаление предложения
 export const deleteOffer = (offerId) => async (dispatch) => {
   try {
-    await databaseService.deleteOffer(offerId);
+    await firestoreService.deleteOffer(offerId);
     dispatch({ type: OFFER_DELETED, payload: offerId });
     return { success: true };
   } catch (error) {
