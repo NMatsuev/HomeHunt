@@ -69,8 +69,6 @@ export default function MainScreen() {
   const {
     ads: kufarAds,
     isLoading: kufarLoading,
-    fromCache,
-    lastUpdated,
     loadAds,
     refreshAds,
   } = kufarCacheViewModel();
