@@ -21,7 +21,6 @@ import useThemeViewModel from "../../viewModels/themeViewModel";
 import useLanguageViewModel from "../../viewModels/languageViewModel";
 import kufarCacheViewModel from "../../viewModels/kufarCacheViewModel";
 import OfferForm from "../../components/forms/OfferForm";
-import OfferImage from "../../components/OfferImage";
 import networkService from "../../services/networkService";
 
 // Функция нечеткого поиска (Levenshtein distance)
@@ -328,24 +327,14 @@ export default function MainScreen() {
         }
       >
         <View style={styles.imageContainer}>
-          {isLocalOffer ? (
-            <OfferImage
-              imageUrl={typeof item.image === "string" ? item.image : null}
-              style={styles.image}
-              width={100}
-              height={130}
-              optimized={true}
-            />
-          ) : (
-            <Image
-              source={item.image}
-              style={styles.image}
-              resizeMode="cover"
-              onError={(e) =>
-                console.log("Kufar image error:", e.nativeEvent.error)
-              }
-            />
-          )}
+          <Image
+            source={isLocalOffer ? { uri: item.image } : item.image}
+            style={styles.image}
+            resizeMode="cover"
+            onError={(e) =>
+              console.log("Kufar image error:", e.nativeEvent.error)
+            }
+          />
         </View>
 
         <View style={styles.infoContainer}>

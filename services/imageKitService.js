@@ -3,9 +3,6 @@ import axios from "axios";
 import { Platform, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
-const IMAGEKIT_URL = "https://upload.imagekit.io/api/v1/files/upload";
-const IMAGEKIT_PRIVATE_KEY = "private_DrUvWDrWv1zgt2FNwnoMitFFHu0=";
-
 class ImageKitService {
   // Запрос разрешений для галереи
   async requestGalleryPermission() {
@@ -63,8 +60,7 @@ class ImageKitService {
       }
       throw new Error("No image selected");
     } catch (error) {
-      console.error("Error picking image:", error);
-      throw error;
+      console.log("Error picking image:", error);
     }
   }
 
@@ -97,8 +93,7 @@ class ImageKitService {
       }
       throw new Error("No photo taken");
     } catch (error) {
-      console.error("Error taking photo:", error);
-      throw error;
+      console.log("Error taking photo:", error);
     }
   }
 
@@ -135,13 +130,17 @@ class ImageKitService {
       console.log("Uploading to ImageKit...");
 
       // Загружаем на ImageKit
-      const response = await axios.post(IMAGEKIT_URL, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Basic ${btoa(`${IMAGEKIT_PRIVATE_KEY}:`)}`,
+      const response = await axios.post(
+        process.env.EXPO_PUBLIC_IMAGEKIT_URL,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Basic ${btoa(`${process.env.EXPO_PUBLIC_IMAGEKIT_PRIVATE_KEY}:`)}`,
+          },
+          timeout: 60000,
         },
-        timeout: 60000,
-      });
+      );
 
       console.log("ImageKit upload successful");
 
@@ -190,7 +189,6 @@ class ImageKitService {
       });
     } catch (error) {
       console.error("Error converting URI to base64:", error);
-      throw error;
     }
   }
 
@@ -199,7 +197,7 @@ class ImageKitService {
     try {
       await axios.delete(`https://api.imagekit.io/v1/files/${fileId}`, {
         headers: {
-          Authorization: `Basic ${btoa(`${IMAGEKIT_PRIVATE_KEY}:`)}`,
+          Authorization: `Basic ${btoa(`${process.env.EXPO_PUBLIC_IMAGEKIT_PRIVATE_KEY}:`)}`,
         },
       });
       return { success: true };

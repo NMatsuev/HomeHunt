@@ -1,13 +1,14 @@
 // services/cacheService.js
 import * as SQLite from "expo-sqlite";
+import { CACHE_DB_NAME, CACHE_TABLE_NAME } from "../config/StorageConfig";
 
-const db = SQLite.openDatabaseSync("app_cache.db");
+const db = SQLite.openDatabaseSync(CACHE_DB_NAME);
 
 class CacheService {
   async initDatabase() {
     try {
       await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS cache (
+        CREATE TABLE IF NOT EXISTS ${CACHE_TABLE_NAME} (
           key TEXT PRIMARY KEY,
           data TEXT NOT NULL,
           timestamp INTEGER NOT NULL
@@ -23,7 +24,7 @@ class CacheService {
     try {
       const dataString = JSON.stringify(data);
       await db.runAsync(
-        `INSERT OR REPLACE INTO cache (key, data, timestamp) VALUES (?, ?, ?)`,
+        `INSERT OR REPLACE INTO ${CACHE_TABLE_NAME} (key, data, timestamp) VALUES (?, ?, ?)`,
         [key, dataString, Date.now()],
       );
       return true;
@@ -36,7 +37,7 @@ class CacheService {
   async get(key) {
     try {
       const result = await db.getFirstAsync(
-        "SELECT * FROM cache WHERE key = ?",
+        `SELECT * FROM ${CACHE_TABLE_NAME} WHERE key = ?`,
         [key],
       );
       if (!result) return null;
@@ -52,7 +53,7 @@ class CacheService {
 
   async clear() {
     try {
-      await db.runAsync("DELETE FROM cache");
+      await db.runAsync(`DELETE FROM ${CACHE_TABLE_NAME}`);
       return true;
     } catch (error) {
       console.error("Error clearing cache:", error);

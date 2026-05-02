@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { THEME_STORAGE_KEY } from "../../config/StorageKeys";
+import { THEME_STORAGE_KEY } from "../../config/StorageConfig";
 import { lightTheme, darkTheme } from "../../utils/themes";
 
 export const THEME_LOADING = "THEME_LOADING";

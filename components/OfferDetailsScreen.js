@@ -15,7 +15,6 @@ import useLanguageViewModel from "../viewModels/languageViewModel";
 import useOffersViewModel from "../viewModels/offersViewModel";
 import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
-import OfferImage from "../components/OfferImage";
 
 export default function OfferDetailsScreen({ route, navigation }) {
   const { offer, activeTab } = route.params;
@@ -52,56 +51,40 @@ export default function OfferDetailsScreen({ route, navigation }) {
 
   // Компонент изображения в зависимости от типа объявления
   const renderImage = () => {
-    // Для Kufar используем обычный Image
-    if (isKufarOffer) {
-      return (
-        <View style={styles.imageWrapper}>
-          {imageLoading && (
-            <View style={styles.imageLoader}>
-              <ActivityIndicator size="large" color={themeColors.primary} />
-            </View>
-          )}
-          <Image
-            source={offer.image}
-            style={styles.image}
-            resizeMode="cover"
-            onLoadStart={() => {
-              setImageLoading(true);
-              setImageError(false);
-            }}
-            onLoadEnd={() => setImageLoading(false)}
-            onError={(e) => {
-              console.error("Kufar image load error:", e.nativeEvent.error);
-              setImageError(true);
-              setImageLoading(false);
-            }}
-          />
-          {imageError && (
-            <View style={styles.imageErrorContainer}>
-              <Text
-                style={[
-                  styles.imageErrorText,
-                  { color: themeColors.textSecondary },
-                ]}
-              >
-                📷 {t("offerDetails.imageLoadError")}
-              </Text>
-            </View>
-          )}
-        </View>
-      );
-    }
-
-    // Для локальных объявлений используем OfferImage с оптимизацией
     return (
       <View style={styles.imageWrapper}>
-        <OfferImage
-          imageUrl={typeof imageUrl === "string" ? imageUrl : null}
+        {imageLoading && (
+          <View style={styles.imageLoader}>
+            <ActivityIndicator size="large" color={themeColors.primary} />
+          </View>
+        )}
+        <Image
+          source={!isKufarOffer ? { uri: offer.image } : offer.image}
           style={styles.image}
-          width={400}
-          height={250}
-          optimized={true}
+          resizeMode="cover"
+          onLoadStart={() => {
+            setImageLoading(true);
+            setImageError(false);
+          }}
+          onLoadEnd={() => setImageLoading(false)}
+          onError={(e) => {
+            console.error("Kufar image load error:", e.nativeEvent.error);
+            setImageError(true);
+            setImageLoading(false);
+          }}
         />
+        {imageError && (
+          <View style={styles.imageErrorContainer}>
+            <Text
+              style={[
+                styles.imageErrorText,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              📷 {t("offerDetails.imageLoadError")}
+            </Text>
+          </View>
+        )}
       </View>
     );
   };

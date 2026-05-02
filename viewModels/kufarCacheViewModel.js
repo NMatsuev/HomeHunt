@@ -2,9 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import kufarService from "../services/kufarService";
 import cacheService from "../services/сacheService";
-
-const CACHE_KEY = "kufar_ads";
-const CACHE_TTL = 3600000; // 1 час в миллисекундах
+import { CACHE_KEY, CACHE_TTL } from "../config/StorageConfig";
 
 const kufarCacheViewModel = () => {
   const [ads, setAds] = useState([]);
