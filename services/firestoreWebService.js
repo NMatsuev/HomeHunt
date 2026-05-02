@@ -15,7 +15,7 @@ import {
 import { FIREBASE_CONFIG, COLLECTION_NAME } from "../config/StorageConfig";
 
 // Инициализация Firebase
-const app = initializeApp(FIREBASE_CONFIG);
+export const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 
 class FirestoreWebService {

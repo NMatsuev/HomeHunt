@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,14 +7,13 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import useThemeViewModel from "../../viewModels/themeViewModel";
 import useLanguageViewModel from "../../viewModels/languageViewModel";
-import imageKitService from "../../services/imageKitService";
+import useOfferFormViewModel from "../../viewModels/offerFormViewModel";
 
 const getValidationSchema = (t, isEditing, hasImage) => {
   return Yup.object().shape({
@@ -55,178 +54,17 @@ export default function OfferForm({
 }) {
   const { themeColors } = useThemeViewModel();
   const { t } = useLanguageViewModel();
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [imageError, setImageError] = useState(false);
 
-  const getInitialValues = () => {
-    if (initialOffer) {
-      return {
-        title: initialOffer.title || "",
-        price: initialOffer.price || "",
-        rooms: initialOffer.rooms?.toString() || "",
-        area: initialOffer.area?.toString() || "",
-        floor: initialOffer.floor || "",
-        floorCount: initialOffer.floorCount?.toString() || "",
-        address: initialOffer.address || "",
-        description: initialOffer.description || "",
-        imageUrl: initialOffer.imageUrl || initialOffer.image || "",
-      };
-    }
-    return {
-      title: "",
-      price: "",
-      rooms: "",
-      area: "",
-      floor: "",
-      floorCount: "",
-      address: "",
-      description: "",
-      imageUrl: "",
-    };
-  };
-
-  const handleImagePick = () => {
-    Alert.alert(
-      t("form.addPhoto"),
-      t("form.choosePhotoSource"),
-      [
-        { text: t("form.cancel"), style: "cancel" },
-        { text: t("form.gallery"), onPress: () => pickFromGallery() },
-        { text: t("form.camera"), onPress: () => takePhoto() },
-      ],
-      { cancelable: true },
-    );
-  };
-
-  const pickFromGallery = async () => {
-    try {
-      const result = await imageKitService.pickImage();
-      if (result) {
-        setSelectedImage(result);
-        setImageError(false);
-      }
-    } catch (error) {
-      console.error("Gallery error:", error);
-      Alert.alert(t("form.error"), error.message);
-    }
-  };
-
-  const takePhoto = async () => {
-    try {
-      const result = await imageKitService.takePhoto();
-      if (result) {
-        setSelectedImage(result);
-        setImageError(false);
-      }
-    } catch (error) {
-      console.error("Camera error:", error);
-      Alert.alert(t("form.error"), error.message);
-    }
-  };
-
-  const uploadImage = async () => {
-    if (!selectedImage) return null;
-
-    setUploading(true);
-    setUploadProgress(0);
-
-    // Симуляция прогресса загрузки
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => Math.min(prev + 10, 90));
-    }, 200);
-
-    try {
-      // Используем base64 из selectedImage
-      const result = await imageKitService.uploadToImageKit(
-        selectedImage.uri,
-        selectedImage.fileName,
-        selectedImage.base64, // Передаем base64, который уже есть
-      );
-
-      clearInterval(interval);
-      setUploadProgress(100);
-
-      if (result.success) {
-        return result.url;
-      } else {
-        Alert.alert(t("form.error"), result.error || t("form.uploadFailed"));
-        return null;
-      }
-    } catch (error) {
-      clearInterval(interval);
-      console.error("Upload error:", error);
-      Alert.alert(t("form.error"), error.message);
-      return null;
-    } finally {
-      setTimeout(() => {
-        setUploading(false);
-        setUploadProgress(0);
-      }, 500);
-    }
-  };
-  const handleSubmit = async (values, { setSubmitting }) => {
-    try {
-      setImageError(false);
-
-      // Проверка наличия изображения для нового объявления
-      if (!isEditing && !selectedImage && !values.imageUrl) {
-        setImageError(true);
-        Alert.alert(t("form.error"), t("form.imageRequired"), [{ text: "OK" }]);
-        setSubmitting(false);
-        return;
-      }
-
-      // Загружаем изображение, если оно выбрано
-      let imageUrl = values.imageUrl;
-
-      if (selectedImage) {
-        const uploadedUrl = await uploadImage();
-        if (uploadedUrl) {
-          imageUrl = uploadedUrl;
-        } else if (!isEditing) {
-          // Если загрузка не удалась и это новое объявление, показываем ошибку
-          setImageError(true);
-          Alert.alert(t("form.error"), t("form.uploadFailed"));
-          setSubmitting(false);
-          return;
-        }
-      }
-
-      const offerData = {
-        ...values,
-        rooms: parseInt(values.rooms) || 1,
-        area: parseInt(values.area) || 0,
-        floorCount: parseInt(values.floorCount) || 1,
-        imageUrl: imageUrl,
-        image: imageUrl, // Для обратной совместимости
-      };
-
-      if (isEditing && initialOffer) {
-        const updatedOffer = {
-          ...initialOffer,
-          ...offerData,
-        };
-        await onSubmit(updatedOffer);
-      } else {
-        await onSubmit(offerData);
-      }
-
-      // Сбрасываем выбранное изображение после успешной отправки
-      setSelectedImage(null);
-    } catch (error) {
-      console.error("Submit error:", error);
-      Alert.alert(t("form.error"), error.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImageError(false);
-  };
+  const {
+    selectedImage,
+    uploading,
+    uploadProgress,
+    imageError,
+    getInitialValues,
+    handleImagePick,
+    handleSubmit,
+    removeImage,
+  } = useOfferFormViewModel(initialOffer, isEditing, onSubmit, onCancel, t);
 
   const styles = createStyles(themeColors);
 
@@ -243,7 +81,7 @@ export default function OfferForm({
       {({
         handleChange,
         handleBlur,
-        handleSubmit,
+        handleSubmit: formikSubmit,
         values,
         errors,
         touched,
@@ -336,7 +174,6 @@ export default function OfferForm({
               )}
             </View>
 
-            {/* Остальные поля формы */}
             {/* Поле Название */}
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: themeColors.text }]}>
@@ -617,7 +454,7 @@ export default function OfferForm({
                   styles.submitButton,
                   { backgroundColor: themeColors.primary },
                 ]}
-                onPress={handleSubmit}
+                onPress={formikSubmit}
                 disabled={isSubmitting || uploading}
               >
                 <Text style={styles.submitButtonText}>

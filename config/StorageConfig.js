@@ -1,5 +1,6 @@
 export const LANGUAGE_STORAGE_KEY = "app_language_preference";
 export const THEME_STORAGE_KEY = "app_theme_preference";
+export const NOTIFICATION_SETTINGS_STORAGE_KEY = "app_notification_settings";
 
 export const CACHE_DB_NAME = "app_cache.db";
 export const CACHE_TABLE_NAME = "cache";

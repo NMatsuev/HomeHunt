@@ -1,18 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View } from "react-native";
-import CustomTabNavigator from "./components/CustomTabNavigator";
-import { useLoadResources } from "./hooks/useLoadResources";
-import {
-  useSafeAreaInsets,
-  SafeAreaProvider,
-} from "react-native-safe-area-context";
-import CustomSplashScreen from "./components/CustomSplashScreen";
+import { Provider, useSelector } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
-import { Provider } from "react-redux";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import store from "./redux/store";
+import CustomTabNavigator from "./components/CustomTabNavigator";
+import AuthScreen from "./components/AuthScreen";
+import CustomSplashScreen from "./components/CustomSplashScreen";
+import { useLoadResources } from "./hooks/useLoadResources";
+import useLanguageViewModel from "./viewModels/languageViewModel";
+import authService from "./services/authService";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const [showAuth, setShowAuth] = useState(!isAuthenticated);
+  const { t } = useLanguageViewModel();
+
+  // Устанавливаем функцию перевода для сервиса
+  useEffect(() => {
+    authService.setTranslateFunction(t);
+  }, [t]);
+
+  useEffect(() => {
+    setShowAuth(!isAuthenticated);
+  }, [isAuthenticated]);
+
+  const handleAuthSuccess = () => {
+    setShowAuth(false);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -26,14 +45,18 @@ function AppContent() {
         }}
       >
         <NavigationContainer>
-          <CustomTabNavigator />
+          {showAuth ? (
+            <AuthScreen onAuthSuccess={handleAuthSuccess} />
+          ) : (
+            <CustomTabNavigator />
+          )}
         </NavigationContainer>
       </View>
     </View>
   );
 }
 
-export default function App() {
+function AppWrapper() {
   const { isLoading } = useLoadResources();
   const [splashVisible, setSplashVisible] = useState(true);
 
@@ -58,4 +81,8 @@ export default function App() {
       </Provider>
     </SafeAreaProvider>
   );
+}
+
+export default function App() {
+  return <AppWrapper />;
 }

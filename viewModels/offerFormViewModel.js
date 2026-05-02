@@ -13,19 +13,19 @@ import {
   TextInput,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { gStyle } from "../../styles/style";
-import useOffersViewModel from "../../viewModels/offersViewModel";
-import useThemeViewModel from "../../viewModels/themeViewModel";
-import useLanguageViewModel from "../../viewModels/languageViewModel";
-import kufarCacheViewModel from "../../viewModels/kufarCacheViewModel";
-import OfferForm from "../../components/forms/OfferForm";
-import networkService from "../../services/networkService";
-import { useFilterAndSort } from "../../hooks/useFilterAndSort";
-import { useNetworkBanner } from "../../hooks/useNetworkBanner";
-import { FilterPanel } from "../FilterPanel";
-import { PriceRangeModal, RoomsModal } from "../FilterModals";
-import { OfferCard } from "../OfferCard";
-import { sortOptions } from "../../config/SortOptions";
+import { gStyle } from "../styles/style";
+import useOffersViewModel from "./offersViewModel";
+import useThemeViewModel from "./themeViewModel";
+import useLanguageViewModel from "./languageViewModel";
+import kufarCacheViewModel from "./kufarCacheViewModel";
+import OfferForm from "../components/forms/OfferForm";
+import networkService from "../services/networkService";
+import { useFilterAndSort } from "../hooks/useFilterAndSort";
+import { useNetworkBanner } from "../hooks/useNetworkBanner";
+import { FilterPanel } from "../components/FilterPanel";
+import { PriceRangeModal, RoomsModal } from "../components/FilterModals";
+import { OfferCard } from "../components/OfferCard";
+import { sortOptions } from "../config/SortOptions";
 
 export default function MainScreen() {
   const navigation = useNavigation();

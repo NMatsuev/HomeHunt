@@ -9,6 +9,7 @@ store.subscribe(() => {
     theme: store.getState().theme?.theme,
     language: store.getState().language?.currentLocale,
     offersCount: store.getState().offers?.offers?.length,
+    notifications: store.getState().notifications?.time,
   });
 });
 

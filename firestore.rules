@@ -1,9 +1,14 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Запрещаем доступ к "offers" всем, кроме авторизованных пользователей
+    match /offers/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Запрещаем доступ ко всему остальному (безопасность по умолчанию)
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

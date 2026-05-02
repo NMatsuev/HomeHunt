@@ -29,7 +29,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
   const isKufarOffer = activeTab === "kufar";
 
   // Получаем URL изображения
-  const imageUrl = offer.imageUrl;
+  const imageUrl = offer.image;
 
   const handleDelete = () => {
     setAlertVisible(true);
@@ -59,7 +59,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
           </View>
         )}
         <Image
-          source={!isKufarOffer ? { uri: offer.image } : offer.image}
+          source={!isKufarOffer ? { uri: imageUrl } : imageUrl}
           style={styles.image}
           resizeMode="cover"
           onLoadStart={() => {
@@ -212,7 +212,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
             <Text
               style={[styles.description, { color: themeColors.textSecondary }]}
             >
-              {offer.description || t("offerDetails.noDescription")}
+              {offer.description || "—"}
             </Text>
           </View>
 
