@@ -1,10 +1,13 @@
 import { useEffect, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  loadOffers as loadOffersAction,
+  initializeDatabase,
+  subscribeToOffers,
+  unsubscribeFromOffersRealTime,
   addOffer as addOfferAction,
   updateOffer as updateOfferAction,
   deleteOffer as deleteOfferAction,
-  initializeDatabase,
 } from "../redux/actions/offersActions";
 
 const useOffersViewModel = () => {
@@ -19,15 +22,33 @@ const useOffersViewModel = () => {
   const offers = state?.offers?.offers || [];
   const isLoading = state?.offers?.isLoading || false;
   const error = state?.offers?.error || null;
+  const isSubscribed = state?.offers?.isSubscribed || false;
 
-  console.log("=== OFFERS VIEW MODEL DEBUG ===");
-  console.log("Offers array:", offers);
-  console.log("Offers length:", offers.length);
-  console.log("================================");
-
+  // Автоматическая инициализация при монтировании
   useEffect(() => {
-    console.log("Initializing Firestore from ViewModel...");
-    dispatch(initializeDatabase());
+    if (!isSubscribed) {
+      initDatabase();
+    }
+
+    // Отписываемся при размонтировании компонента
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Инициализация базы данных с реальным временем
+  const initDatabase = useCallback(() => {
+    return dispatch(initializeDatabase());
+  }, [dispatch]);
+
+  // Ручная подписка (обычно не нужна, так как initDatabase уже подписывается)
+  const subscribe = useCallback(() => {
+    return dispatch(subscribeToOffers());
+  }, [dispatch]);
+
+  // Отписка (важно для очистки при размонтировании)
+  const unsubscribe = useCallback(() => {
+    return dispatch(unsubscribeFromOffersRealTime());
   }, [dispatch]);
 
   const addOffer = useCallback(
@@ -137,14 +158,16 @@ const useOffersViewModel = () => {
 
   return {
     offers,
-    isLoading: isLoading || loading,
+    isLoading,
     error,
-    addOffer,
-    updateOffer,
-    deleteOffer,
-    getOfferById,
-    getFilteredOffers,
-    totalCount: offers.length,
+    isSubscribed,
+    initDatabase,
+    subscribe,
+    unsubscribe,
+    loadOffers: () => dispatch(loadOffersAction()),
+    addOffer: (offer) => dispatch(addOfferAction(offer)),
+    updateOffer: (offer) => dispatch(updateOfferAction(offer)),
+    deleteOffer: (offerId) => dispatch(deleteOfferAction(offerId)),
   };
 };
 

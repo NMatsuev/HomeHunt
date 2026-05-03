@@ -5,16 +5,20 @@ import {
   OFFER_ADDED,
   OFFER_UPDATED,
   OFFER_DELETED,
+  OFFERS_REALTIME_UPDATE,
+  OFFERS_SUBSCRIBE,
+  OFFERS_UNSUBSCRIBE,
 } from "../actions/offersActions";
 
 const initialState = {
   offers: [],
   isLoading: false,
   error: null,
+  isSubscribed: false, // Добавьте это поле
 };
 
 const offersReducer = (state = initialState, action) => {
-  console.log("Reducer action:", action.type, action.payload);
+  console.log("Reducer action:", action.type);
 
   switch (action.type) {
     case OFFERS_LOADING:
@@ -25,23 +29,24 @@ const offersReducer = (state = initialState, action) => {
       };
 
     case OFFERS_LOADED:
-      const loadedOffers = Array.isArray(action.payload) ? action.payload : [];
-      console.log("Setting offers in reducer:", loadedOffers.length);
       return {
         ...state,
-        offers: loadedOffers,
+        offers: Array.isArray(action.payload) ? action.payload : [],
         isLoading: false,
         error: null,
       };
 
-    case OFFERS_ERROR:
+    case OFFERS_REALTIME_UPDATE:
+      // Обновляем список из реального времени
       return {
         ...state,
+        offers: Array.isArray(action.payload) ? action.payload : [],
         isLoading: false,
-        error: action.payload,
+        error: null,
       };
 
     case OFFER_ADDED:
+      // Можно оставить для оптимистичного обновления, но подписка и так обновит
       return {
         ...state,
         offers: [action.payload, ...state.offers],
@@ -62,6 +67,25 @@ const offersReducer = (state = initialState, action) => {
         ...state,
         offers: state.offers.filter((offer) => offer.id !== action.payload),
         isLoading: false,
+      };
+
+    case OFFERS_SUBSCRIBE:
+      return {
+        ...state,
+        isSubscribed: true,
+      };
+
+    case OFFERS_UNSUBSCRIBE:
+      return {
+        ...state,
+        isSubscribed: false,
+      };
+
+    case OFFERS_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
       };
 
     default:

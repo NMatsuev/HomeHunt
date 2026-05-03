@@ -56,7 +56,7 @@ export default {
   },
   savedScreen: {
     title: "Saved",
-    text: "Saved offers will be displayed here",
+    noSavedOffers: "You have no saved offers yet",
   },
   tabs: {
     main: "Main",

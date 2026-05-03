@@ -34,6 +34,22 @@ function MainStackScreen() {
   );
 }
 
+function SavedStackScreen() {
+  const { themeColors } = useThemeViewModel();
+
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: themeColors.background },
+      }}
+    >
+      <Stack.Screen name="SavedScreen" component={SavedScreen} />
+      <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+
 export default function CustomTabNavigator() {
   const { t } = useLanguageViewModel();
   const { themeColors } = useThemeViewModel();
@@ -50,7 +66,7 @@ export default function CustomTabNavigator() {
       key: "saved",
       title: t("tabs.saved"),
       icon: "⭐",
-      component: SavedScreen,
+      component: SavedStackScreen,
     },
     {
       key: "settings",

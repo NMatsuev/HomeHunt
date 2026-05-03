@@ -41,7 +41,12 @@ export default function MainScreen() {
     useNetworkBanner();
 
   // Сначала получаем данные
-  const { offers, isLoading: localLoading, addOffer } = useOffersViewModel();
+  const {
+    offers,
+    isLoading: localLoading,
+    addOffer,
+    unsubscribe,
+  } = useOffersViewModel();
   const {
     ads: kufarAds,
     isLoading: kufarLoading,

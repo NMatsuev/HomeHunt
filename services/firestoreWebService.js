@@ -11,6 +11,7 @@ import {
   query,
   orderBy,
   Timestamp,
+  onSnapshot,
 } from "firebase/firestore";
 import { FIREBASE_CONFIG, COLLECTION_NAME } from "../config/StorageConfig";
 
@@ -139,6 +140,73 @@ class FirestoreWebService {
       console.error("Error getting offers count:", error.message);
       return 0;
     }
+  }
+
+  // Подписка на изменения в реальном времени
+  subscribeToOffers(callback, errorCallback) {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      orderBy("created_at", "desc"),
+    );
+
+    // Создаем подписку
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const offers = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          // Пропускаем тестовые документы
+          if (data.isTest || data._temp) return;
+
+          offers.push({
+            id: doc.id,
+            ...data,
+            created_at: data.created_at?.toMillis() || Date.now(),
+            updated_at: data.updated_at?.toMillis() || Date.now(),
+          });
+        });
+
+        console.log(`Real-time update: ${offers.length} offers received`);
+        if (callback) callback(offers);
+      },
+      (error) => {
+        console.error("Snapshot error:", error);
+        if (errorCallback) errorCallback(error);
+      },
+    );
+
+    // Возвращаем функцию отписки
+    return unsubscribe;
+  }
+
+  // Подписка на изменения конкретного объявления
+  subscribeToOffer(offerId, callback, errorCallback) {
+    const offerRef = doc(db, COLLECTION_NAME, offerId);
+
+    const unsubscribe = onSnapshot(
+      offerRef,
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          const offer = {
+            id: docSnapshot.id,
+            ...data,
+            created_at: data.created_at?.toMillis() || Date.now(),
+            updated_at: data.updated_at?.toMillis() || Date.now(),
+          };
+          if (callback) callback(offer);
+        } else {
+          if (callback) callback(null);
+        }
+      },
+      (error) => {
+        console.error("Offer snapshot error:", error);
+        if (errorCallback) errorCallback(error);
+      },
+    );
+
+    return unsubscribe;
   }
 }
 

@@ -1,8 +1,20 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import useSavedViewModel from "../viewModels/savedViewModel";
 
 export const OfferCard = ({ item, isLocalOffer, onPress, themeColors, t }) => {
+  const { isSaved, toggleSaveOffer } = useSavedViewModel();
+  const isOfferSaved = isSaved(item.id);
+
   const styles = createStyles(themeColors);
+
+  const handleSavePress = async (e) => {
+    e.stopPropagation();
+    const result = await toggleSaveOffer(item.id);
+    if (result.success) {
+      console.log(isOfferSaved ? "Removed from saved" : "Added to saved");
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -76,6 +88,20 @@ export const OfferCard = ({ item, isLocalOffer, onPress, themeColors, t }) => {
           {item.description}
         </Text>
       </View>
+      {/* Кнопка сохранения */}
+      <TouchableOpacity
+        style={[
+          styles.saveButton,
+          {
+            backgroundColor: isOfferSaved
+              ? themeColors.primary
+              : "rgba(166, 160, 160, 0.26)",
+          },
+        ]}
+        onPress={handleSavePress}
+      >
+        <Text style={styles.saveButtonText}>{isOfferSaved ? "❤️" : "🤍"}</Text>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 };
@@ -98,10 +124,25 @@ const createStyles = (colors) =>
       borderRadius: 8,
       overflow: "hidden",
       marginRight: 12,
+      position: "relative",
     },
     image: {
       width: "100%",
       height: "100%",
+    },
+    saveButton: {
+      position: "absolute",
+      bottom: 8,
+      right: 8,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    saveButtonText: {
+      fontSize: 16,
     },
     infoContainer: {
       flex: 1,
