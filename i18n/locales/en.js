@@ -52,6 +52,8 @@ export default {
       areaAsc: "Area ascending",
       areaDesc: "Area descending",
     },
+    locationFound: "Your location has been determined",
+    locationError: "Could not determine your location",
   },
   adTypes: {
     sale: "For sale",

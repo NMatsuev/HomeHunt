@@ -31,15 +31,19 @@ const levenshteinDistance = (a, b) => {
 };
 
 const fuzzySearch = (text, query) => {
+  // Защита от null/undefined
   if (!query || query.length === 0) return true;
+  if (!text || typeof text !== "string") return false;
 
-  text = text.toLowerCase();
-  query = query.toLowerCase();
+  const textLower = text.toLowerCase();
+  const queryLower = query.toLowerCase();
 
-  if (text.includes(query)) return true;
+  // Прямое вхождение
+  if (textLower.includes(queryLower)) return true;
 
-  const textWords = text.split(/\s+/);
-  const queryWords = query.split(/\s+/);
+  // Разбиваем на слова
+  const textWords = textLower.split(/\s+/);
+  const queryWords = queryLower.split(/\s+/);
 
   for (const qWord of queryWords) {
     for (const tWord of textWords) {

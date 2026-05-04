@@ -20,6 +20,7 @@ import useLanguageViewModel from "../../viewModels/languageViewModel";
 import kufarCacheViewModel from "../../viewModels/kufarCacheViewModel";
 import OfferForm from "../../components/forms/OfferForm";
 import networkService from "../../services/networkService";
+import locationService from "../../services/locationService";
 import { useFilterAndSort } from "../../hooks/useFilterAndSort";
 import { useNetworkBanner } from "../../hooks/useNetworkBanner";
 import { FilterPanel } from "../FilterPanel";
@@ -36,6 +37,7 @@ export default function MainScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRangeModal, setPriceRangeModal] = useState(false);
   const [roomsModal, setRoomsModal] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   const { showOfflineBanner, showOnlineBanner, bannerAnim, showBanner } =
     useNetworkBanner();
@@ -79,6 +81,36 @@ export default function MainScreen() {
   const currentSortLabel =
     sortOptionsList.find((opt) => opt.key === sortBy)?.label ||
     t("mainScreen.sort.dateDesc");
+
+  // Функция поиска по геолокации
+  const handleGeoLocation = async () => {
+    setIsLocating(true);
+
+    try {
+      const result = await locationService.getCurrentCity();
+
+      if (result.success && result.city) {
+        // Вставляем название города в поисковую строку
+        setSearchQuery(result.city);
+        // Показываем уведомление об успехе
+        Alert.alert(
+          t("common.success"),
+          `${t("mainScreen.locationFound")}: ${result.city}`,
+          [{ text: "OK" }],
+        );
+      } else {
+        Alert.alert(
+          t("common.error"),
+          result.error || t("mainScreen.locationError"),
+        );
+      }
+    } catch (error) {
+      console.log("Geo location error:", error);
+      Alert.alert(t("common.error"), t("mainScreen.locationError"));
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   // Инициализация
   useEffect(() => {
@@ -216,6 +248,21 @@ export default function MainScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
+
+          {/* Кнопка геолокации */}
+          <TouchableOpacity
+            style={[
+              styles.locationButton,
+              { backgroundColor: themeColors.primary },
+            ]}
+            onPress={handleGeoLocation}
+            disabled={isLocating}
+          >
+            <Text style={styles.locationButtonText}>
+              {isLocating ? "📍" : "📍"}
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[
               styles.filterButton,
@@ -552,4 +599,14 @@ const createStyles = (colors) =>
     modalBackText: { fontSize: 16, fontFamily: "mt-bold" },
     modalTitle: { fontSize: 18, fontFamily: "mt-bold" },
     modalPlaceholder: { width: 50 },
+    locationButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 8,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    locationButtonText: {
+      fontSize: 20,
+    },
   });
