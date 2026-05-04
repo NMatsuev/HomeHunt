@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import useSavedViewModel from "../viewModels/savedViewModel";
+import shareService from "../services/shareService";
 
 export const OfferCard = ({ item, isLocalOffer, onPress, themeColors, t }) => {
   const { isSaved, toggleSaveOffer } = useSavedViewModel();
@@ -13,6 +14,14 @@ export const OfferCard = ({ item, isLocalOffer, onPress, themeColors, t }) => {
     const result = await toggleSaveOffer(item.id);
     if (result.success) {
       console.log(isOfferSaved ? "Removed from saved" : "Added to saved");
+    }
+  };
+
+  const handleSharePress = async (e) => {
+    e.stopPropagation();
+    const result = await shareService.shareOffer(item, t);
+    if (!result.success && !result.dismissed) {
+      console.log("Share failed:", result.error);
     }
   };
 
@@ -89,19 +98,36 @@ export const OfferCard = ({ item, isLocalOffer, onPress, themeColors, t }) => {
         </Text>
       </View>
       {/* Кнопка сохранения */}
-      <TouchableOpacity
-        style={[
-          styles.saveButton,
-          {
-            backgroundColor: isOfferSaved
-              ? themeColors.primary
-              : "rgba(166, 160, 160, 0.26)",
-          },
-        ]}
-        onPress={handleSavePress}
-      >
-        <Text style={styles.saveButtonText}>{isOfferSaved ? "❤️" : "🤍"}</Text>
-      </TouchableOpacity>
+      {isLocalOffer && (
+        <>
+          <TouchableOpacity
+            style={[
+              styles.saveButton,
+              {
+                backgroundColor: isOfferSaved
+                  ? themeColors.primary
+                  : "rgba(166, 160, 160, 0.26)",
+              },
+            ]}
+            onPress={handleSavePress}
+          >
+            <Text style={styles.saveButtonText}>
+              {isOfferSaved ? "❤️" : "🤍"}
+            </Text>
+          </TouchableOpacity>
+          {/* Кнопка поделиться */}
+          <TouchableOpacity
+            style={[
+              styles.iconButton,
+              styles.shareButton,
+              { backgroundColor: "rgba(166, 160, 160, 0.26)" },
+            ]}
+            onPress={handleSharePress}
+          >
+            <Text style={styles.iconButtonText}>📤</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </TouchableOpacity>
   );
 };
@@ -134,6 +160,17 @@ const createStyles = (colors) =>
       position: "absolute",
       bottom: 8,
       right: 8,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    shareButton: {
+      position: "absolute",
+      bottom: 8,
+      right: 44,
       width: 32,
       height: 32,
       borderRadius: 16,

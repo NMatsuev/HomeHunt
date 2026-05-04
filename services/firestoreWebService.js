@@ -13,13 +13,28 @@ import {
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { FIREBASE_CONFIG, COLLECTION_NAME } from "../config/StorageConfig";
 
 // Инициализация Firebase
 export const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 class FirestoreWebService {
+  // Получение текущего пользователя
+  getCurrentUser() {
+    const user = auth.currentUser;
+    if (user) {
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email?.split("@")[0] || "Аноним",
+      };
+    }
+    return null;
+  }
+
   async initDatabase() {
     try {
       console.log("Firestore initializing...");
@@ -66,14 +81,29 @@ class FirestoreWebService {
   async addOffer(offer) {
     try {
       const { id, ...offerData } = offer;
+      const currentUser = this.getCurrentUser();
 
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+      // Добавляем информацию об авторе
+      const offerWithAuthor = {
         ...offerData,
+        authorId: currentUser?.uid || "anonymous",
+        authorName: currentUser?.displayName || "Гость",
+        authorEmail: currentUser?.email || "guest@example.com",
         created_at: Timestamp.now(),
         updated_at: Timestamp.now(),
-      });
+      };
 
-      console.log("Offer added with ID:", docRef.id);
+      const docRef = await addDoc(
+        collection(db, COLLECTION_NAME),
+        offerWithAuthor,
+      );
+
+      console.log(
+        "Offer added with ID:",
+        docRef.id,
+        "by author:",
+        currentUser?.email,
+      );
       return { success: true, id: docRef.id };
     } catch (error) {
       console.error("Error adding offer:", error.message);
@@ -84,12 +114,26 @@ class FirestoreWebService {
   async updateOffer(offer) {
     try {
       const offerRef = doc(db, COLLECTION_NAME, offer.id);
-      const { id, ...updateData } = offer;
+      const {
+        id,
+        created_at,
+        updated_at,
+        authorId,
+        authorName,
+        authorEmail,
+        ...updateData
+      } = offer;
 
-      await updateDoc(offerRef, {
+      // Не обновляем поля автора при редактировании
+      const processedData = {
         ...updateData,
+        rooms: Number(updateData.rooms) || 1,
+        area: Number(updateData.area) || 0,
+        floorCount: Number(updateData.floorCount) || 1,
         updated_at: Timestamp.now(),
-      });
+      };
+
+      await updateDoc(offerRef, processedData);
 
       console.log("Offer updated:", offer.id);
       return { success: true };
@@ -149,14 +193,12 @@ class FirestoreWebService {
       orderBy("created_at", "desc"),
     );
 
-    // Создаем подписку
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
         const offers = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          // Пропускаем тестовые документы
           if (data.isTest || data._temp) return;
 
           offers.push({
@@ -176,11 +218,9 @@ class FirestoreWebService {
       },
     );
 
-    // Возвращаем функцию отписки
     return unsubscribe;
   }
 
-  // Подписка на изменения конкретного объявления
   subscribeToOffer(offerId, callback, errorCallback) {
     const offerRef = doc(db, COLLECTION_NAME, offerId);
 

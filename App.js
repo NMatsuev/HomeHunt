@@ -13,6 +13,7 @@ import CustomSplashScreen from "./components/CustomSplashScreen";
 import { useLoadResources } from "./hooks/useLoadResources";
 import useLanguageViewModel from "./viewModels/languageViewModel";
 import authService from "./services/authService";
+import imageKitService from "./services/imageKitService";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
@@ -23,6 +24,7 @@ function AppContent() {
   // Устанавливаем функцию перевода для сервиса
   useEffect(() => {
     authService.setTranslateFunction(t);
+    imageKitService.setTranslateFunction(t);
   }, [t]);
 
   useEffect(() => {

@@ -31,7 +31,8 @@ export const FilterPanel = ({
 
         <TouchableOpacity style={styles.filterChip} onPress={onPriceRangePress}>
           <Text style={styles.filterChipText}>
-            💰 {priceRange.min || "от"} - {priceRange.max || "до"}
+            💰 {priceRange.min || t("mainScreen.from")} -{" "}
+            {priceRange.max || t("mainScreen.to")}
           </Text>
         </TouchableOpacity>
 

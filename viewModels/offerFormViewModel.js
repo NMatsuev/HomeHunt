@@ -26,7 +26,7 @@ const useOfferFormViewModel = (
         floorCount: initialOffer.floorCount?.toString() || "",
         address: initialOffer.address || "",
         description: initialOffer.description || "",
-        imageUrl: initialOffer.imageUrl || initialOffer.image || "",
+        image: initialOffer.image || "",
       };
     }
     return {
@@ -38,7 +38,7 @@ const useOfferFormViewModel = (
       floorCount: "",
       address: "",
       description: "",
-      imageUrl: "",
+      image: "",
     };
   }, [initialOffer]);
 
@@ -141,7 +141,7 @@ const useOfferFormViewModel = (
         setImageError(false);
 
         // Проверка наличия изображения для нового объявления
-        if (!isEditing && !selectedImage && !values.imageUrl) {
+        if (!isEditing && !selectedImage && !values.image) {
           setImageError(true);
           Alert.alert(t("form.error"), t("form.imageRequired"), [
             { text: "OK" },
@@ -151,7 +151,7 @@ const useOfferFormViewModel = (
         }
 
         // Загружаем изображение, если оно выбрано
-        let imageUrl = values.imageUrl;
+        let imageUrl = values.image;
 
         if (selectedImage) {
           const uploadedUrl = await uploadImage();
@@ -171,7 +171,6 @@ const useOfferFormViewModel = (
           rooms: parseInt(values.rooms) || 1,
           area: parseFloat(values.area) || 0,
           floorCount: parseInt(values.floorCount) || 1,
-          imageUrl: imageUrl,
           image: imageUrl,
         };
 

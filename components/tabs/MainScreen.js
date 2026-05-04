@@ -41,15 +41,10 @@ export default function MainScreen() {
     useNetworkBanner();
 
   // Сначала получаем данные
-  const {
-    offers,
-    isLoading: localLoading,
-    addOffer,
-    unsubscribe,
-  } = useOffersViewModel();
+  const { offers, localLoading, addOffer, unsubscribe } = useOffersViewModel();
   const {
     ads: kufarAds,
-    isLoading: kufarLoading,
+    kufarLoading,
     loadAds,
     refreshAds,
   } = kufarCacheViewModel();
@@ -344,7 +339,10 @@ export default function MainScreen() {
               item={item}
               isLocalOffer={activeTab === "local"}
               onPress={() =>
-                navigation.navigate("OfferDetails", { offer: item, activeTab })
+                navigation.navigate("MainOfferDetails", {
+                  offer: item,
+                  activeTab,
+                })
               }
               themeColors={themeColors}
               t={t}

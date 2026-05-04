@@ -124,6 +124,11 @@ export default {
     uploadFailed: "Не удалось загрузить изображение",
     imageRequired: "Пожалуйста, добавьте фото объявления",
     photo: "Фотография",
+    permissionNeeded: "Необходимо разрешение",
+    grandCameraPermissions:
+      "Пожалуйста, предоставьте разрешение на использование камеры для фото",
+    grandGalleryPermissions:
+      "Пожалуйста, предоставьте разрешение для галереи, чтобы выбрать фото",
     validation: {
       titleRequired: "Название обязательно",
       titleMin: "Название должно быть минимум 5 символов",
@@ -156,6 +161,8 @@ export default {
     additional: "Дополнительно",
     id: "ID объявления",
     date: "Дата добавления",
+    author: "Автор",
+    email: "Email автора",
     edit: "Редактировать",
     delete: "Удалить",
     editTitle: "Редактировать объявление",
@@ -193,5 +200,21 @@ export default {
     passwordWrong: "Неверный пароль",
     tooManyRequests: "Слишком много попыток. Попробуйте позже",
     operationNotAllowed: "Вход с email/паролем отключен",
+  },
+  share: {
+    price: "Цена",
+    address: "Адрес",
+    rooms: "Комнат",
+    area: "Площадь",
+    floor: "Этаж",
+    description: "Описание",
+    viewInApp: "Посмотреть в приложении HomeHunt",
+    button: "Поделиться",
+    error: "Не удалось поделиться объявлением",
+    shareVia: "Поделиться через",
+    copyLink: "Копировать ссылку",
+    email: "Отправить по email",
+    author: "Автор объявления",
+    copied: "Ссылка скопирована",
   },
 };

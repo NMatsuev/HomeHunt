@@ -98,7 +98,7 @@ export default function SavedScreen() {
               item={item}
               isLocalOffer={true}
               onPress={() =>
-                navigation.navigate("OfferDetails", {
+                navigation.navigate("SavedOfferDetails", {
                   offer: item,
                   activeTab: "local",
                 })

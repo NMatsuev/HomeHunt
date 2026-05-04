@@ -28,7 +28,7 @@ function MainStackScreen() {
       }}
     >
       <Stack.Screen name="MainScreen" component={MainScreen} />
-      <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
+      <Stack.Screen name="MainOfferDetails" component={OfferDetailsScreen} />
       <Stack.Screen name="EditOffer" component={OfferForm} />
     </Stack.Navigator>
   );
@@ -45,7 +45,8 @@ function SavedStackScreen() {
       }}
     >
       <Stack.Screen name="SavedScreen" component={SavedScreen} />
-      <Stack.Screen name="OfferDetails" component={OfferDetailsScreen} />
+      <Stack.Screen name="SavedOfferDetails" component={OfferDetailsScreen} />
+      <Stack.Screen name="EditOffer" component={OfferForm} />
     </Stack.Navigator>
   );
 }
@@ -65,7 +66,7 @@ export default function CustomTabNavigator() {
     {
       key: "saved",
       title: t("tabs.saved"),
-      icon: "⭐",
+      icon: "❤️",
       component: SavedStackScreen,
     },
     {

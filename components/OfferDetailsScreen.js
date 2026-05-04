@@ -15,6 +15,8 @@ import useLanguageViewModel from "../viewModels/languageViewModel";
 import useOffersViewModel from "../viewModels/offersViewModel";
 import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
+import useSavedViewModel from "../viewModels/savedViewModel";
+import shareService from "../services/shareService";
 
 export default function OfferDetailsScreen({ route, navigation }) {
   const { offer, activeTab } = route.params;
@@ -25,6 +27,8 @@ export default function OfferDetailsScreen({ route, navigation }) {
   const [alertVisible, setAlertVisible] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const { isSaved, toggleSaveOffer } = useSavedViewModel();
+  const isOfferSaved = isSaved(offer.id);
 
   const isKufarOffer = activeTab === "kufar";
 
@@ -38,13 +42,33 @@ export default function OfferDetailsScreen({ route, navigation }) {
   const confirmDelete = () => {
     deleteOffer(offer.id);
     setAlertVisible(false);
-    navigation.goBack();
+    setTimeout(() => {
+      navigation.goBack();
+    }, 300);
   };
 
   const handleEdit = (editedOffer) => {
     updateOffer(editedOffer);
     setEditModalVisible(false);
-    navigation.goBack();
+    setTimeout(() => {
+      navigation.goBack();
+    }, 300);
+  };
+
+  const handleSavePress = async (e) => {
+    e.stopPropagation();
+    const result = await toggleSaveOffer(offer.id);
+    if (result.success) {
+      console.log(isOfferSaved ? "Removed from saved" : "Added to saved");
+    }
+  };
+
+  const handleSharePress = async (e) => {
+    e.stopPropagation();
+    const result = await shareService.shareOffer(offer, t);
+    if (!result.success && !result.dismissed) {
+      console.log("Share failed:", result.error);
+    }
   };
 
   const styles = createStyles(themeColors);
@@ -130,7 +154,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
               <Text style={[styles.badgeText, { color: themeColors.primary }]}>
                 {offer.rooms
                   ? t("mainScreen.rooms", { count: offer.rooms })
-                  : t("offerDetails.noRooms")}
+                  : "-"}
               </Text>
             </View>
           </View>
@@ -250,7 +274,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
                   </Text>
                 </View>
               )}
-              {offer.userEmail && !isKufarOffer && (
+              {offer.authorName && !isKufarOffer && (
                 <View style={styles.infoRow}>
                   <Text
                     style={[
@@ -261,11 +285,63 @@ export default function OfferDetailsScreen({ route, navigation }) {
                     {t("offerDetails.author")}:
                   </Text>
                   <Text style={[styles.infoValue, { color: themeColors.text }]}>
-                    {offer.userEmail}
+                    {offer.authorName}
+                  </Text>
+                </View>
+              )}
+              {offer.authorEmail && !isKufarOffer && (
+                <View style={styles.infoRow}>
+                  <Text
+                    style={[
+                      styles.infoLabel,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {t("offerDetails.email")}:
+                  </Text>
+                  <Text style={[styles.infoValue, { color: themeColors.text }]}>
+                    {offer.authorEmail}
                   </Text>
                 </View>
               )}
             </View>
+            {!isKufarOffer && (
+              <View style={styles.iconsContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    styles.saveButton,
+                    {
+                      backgroundColor: isOfferSaved
+                        ? themeColors.primary
+                        : themeColors.inputBackground,
+                      borderWidth: 1,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                  onPress={handleSavePress}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {isOfferSaved ? "❤️" : "🤍"}
+                  </Text>
+                </TouchableOpacity>
+                {/* Кнопка поделиться */}
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    styles.shareButton,
+                    {
+                      backgroundColor: themeColors.inputBackground,
+                      borderWidth: 1,
+                      borderColor: themeColors.border,
+                    },
+                  ]}
+                  onPress={handleSharePress}
+                >
+                  <Text style={styles.iconButtonText}>📤</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
 
@@ -555,6 +631,12 @@ const createStyles = (colors) =>
       alignItems: "center",
       marginHorizontal: 4,
     },
+    iconsContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      marginTop: 16,
+    },
     editButton: {
       elevation: 3,
     },
@@ -590,5 +672,25 @@ const createStyles = (colors) =>
     },
     modalPlaceholder: {
       width: 50,
+    },
+    // Стили для иконок
+    iconButton: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    saveButton: {
+      backgroundColor: colors.inputBackground,
+    },
+    saveButtonText: {
+      fontSize: 24,
+    },
+    shareButton: {
+      backgroundColor: colors.inputBackground,
+    },
+    shareButtonText: {
+      fontSize: 20,
     },
   });

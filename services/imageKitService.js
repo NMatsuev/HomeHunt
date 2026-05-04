@@ -4,13 +4,30 @@ import { Platform, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
 class ImageKitService {
+  setTranslateFunction(translateFn) {
+    this.translateFunction = translateFn;
+  }
+
+  getTranslation(key) {
+    if (this.translateFunction) {
+      return this.translateFunction(`form.${key}`);
+    }
+    // Fallback на английский
+    const fallbacks = {
+      permissionNeeded: "Permission needed",
+      grandCameraPermissions: "Please grant camera permissions to take photos",
+      grandGalleryPermissions:
+        "Please grant gallery permissions to select photos",
+    };
+    return fallbacks[key] || "Error. Try again later";
+  }
   // Запрос разрешений для галереи
   async requestGalleryPermission() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission needed",
-        "Please grant gallery permissions to select photos",
+        this.getTranslation("permissionNeeded"),
+        this.getTranslation("grandGalleryPermissions"),
       );
       return false;
     }
@@ -22,8 +39,8 @@ class ImageKitService {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
-        "Permission needed",
-        "Please grant camera permissions to take photos",
+        this.getTranslation("permissionNeeded"),
+        this.getTranslation("grandCameraPermissions"),
       );
       return false;
     }

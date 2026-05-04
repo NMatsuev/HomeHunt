@@ -15,7 +15,7 @@ import useThemeViewModel from "../../viewModels/themeViewModel";
 import useLanguageViewModel from "../../viewModels/languageViewModel";
 import useOfferFormViewModel from "../../viewModels/offerFormViewModel";
 
-const getValidationSchema = (t, isEditing, hasImage) => {
+const getValidationSchema = (t) => {
   return Yup.object().shape({
     title: Yup.string()
       .required(t("form.validation.titleRequired"))
@@ -71,11 +71,7 @@ export default function OfferForm({
   return (
     <Formik
       initialValues={getInitialValues()}
-      validationSchema={getValidationSchema(
-        t,
-        isEditing,
-        !!selectedImage || !!initialOffer?.imageUrl,
-      )}
+      validationSchema={getValidationSchema(t)}
       onSubmit={handleSubmit}
     >
       {({
@@ -100,10 +96,10 @@ export default function OfferForm({
                 {!isEditing && <Text style={styles.required}>*</Text>}
               </Text>
 
-              {(selectedImage || values.imageUrl) && !uploading ? (
+              {(selectedImage || values.image) && !uploading ? (
                 <View style={styles.imagePreviewContainer}>
                   <Image
-                    source={{ uri: selectedImage?.uri || values.imageUrl }}
+                    source={{ uri: selectedImage?.uri || values.image }}
                     style={styles.imagePreview}
                     resizeMode="cover"
                   />
