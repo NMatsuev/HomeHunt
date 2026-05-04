@@ -1,5 +1,6 @@
 import {
-  getAuth,
+  initializeAuth,
+  getReactNativePersistence,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -8,10 +9,15 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { app } from "./firestoreWebService";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+
+const persistence = getReactNativePersistence(ReactNativeAsyncStorage);
 
 class AuthService {
   constructor() {
-    this.auth = getAuth(app);
+    this.auth = initializeAuth(app, {
+      persistence,
+    });
     this.authListeners = [];
     this.translateFunction = null;
   }

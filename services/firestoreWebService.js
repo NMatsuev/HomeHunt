@@ -13,28 +13,13 @@ import {
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { FIREBASE_CONFIG, COLLECTION_NAME } from "../config/StorageConfig";
 
 // Инициализация Firebase
 export const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 class FirestoreWebService {
-  // Получение текущего пользователя
-  getCurrentUser() {
-    const user = auth.currentUser;
-    if (user) {
-      return {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || user.email?.split("@")[0] || "Аноним",
-      };
-    }
-    return null;
-  }
-
   async initDatabase() {
     try {
       console.log("Firestore initializing...");

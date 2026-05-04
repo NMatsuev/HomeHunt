@@ -13,6 +13,7 @@ import {
 import useThemeViewModel from "../viewModels/themeViewModel";
 import useLanguageViewModel from "../viewModels/languageViewModel";
 import useOffersViewModel from "../viewModels/offersViewModel";
+import useAuthViewModel from "../viewModels/authViewModel";
 import OfferForm from "../components/forms/OfferForm";
 import CustomAlert from "../components/CustomAlert";
 import useSavedViewModel from "../viewModels/savedViewModel";
@@ -23,6 +24,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
   const { themeColors } = useThemeViewModel();
   const { t } = useLanguageViewModel();
   const { deleteOffer, updateOffer } = useOffersViewModel();
+  const { user } = useAuthViewModel(); // Получаем текущего пользователя
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -31,7 +33,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
   const isOfferSaved = isSaved(offer.id);
 
   const isKufarOffer = activeTab === "kufar";
-
+  const isOwner = !isKufarOffer && user && offer.authorId === user.uid;
   // Получаем URL изображения
   const imageUrl = offer.image;
 
@@ -345,7 +347,7 @@ export default function OfferDetailsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {!isKufarOffer && (
+        {isOwner && (
           <View style={styles.actionsContainer}>
             <TouchableOpacity
               style={[

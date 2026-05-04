@@ -38,6 +38,9 @@ export default {
     noOffers: "Нет сохраненных объявлений",
     offlineNoData: "Нет интернета и нет сохраненных объявлений",
     noKufarOffers: "Нет объявлений из Kufar",
+    localOffers: "Локальные",
+    myOffers: "Мои",
+    othersOffers: "Не мои",
     sort: {
       dateDesc: "Сначала новые",
       priceAsc: "Сначала дешевые",

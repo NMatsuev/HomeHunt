@@ -5,6 +5,8 @@ import {
   addSaved,
   removeSaved,
   toggleSaved,
+  clearSavedState,
+  migrateSavedOffers,
 } from "../redux/actions/savedActions";
 
 const useSavedViewModel = () => {
@@ -17,10 +19,12 @@ const useSavedViewModel = () => {
 
   // Загрузка сохраненных ID при монтировании
   useEffect(() => {
-    dispatch(loadSavedIds());
+    const loadSaved = async () => {
+      await dispatch(loadSavedIds());
+    };
+    loadSaved();
   }, [dispatch]);
 
-  // Проверка, сохранено ли объявление
   const isSaved = useCallback(
     (offerId) => {
       return savedIds.includes(offerId);
@@ -28,40 +32,37 @@ const useSavedViewModel = () => {
     [savedIds],
   );
 
-  // Добавление в сохраненные
   const saveOffer = useCallback(
     async (offerId) => {
-      const result = await dispatch(addSaved(offerId));
-      return result;
+      return await dispatch(addSaved(offerId));
     },
     [dispatch],
   );
 
-  // Удаление из сохраненных
   const unsaveOffer = useCallback(
     async (offerId) => {
-      const result = await dispatch(removeSaved(offerId));
-      return result;
+      return await dispatch(removeSaved(offerId));
     },
     [dispatch],
   );
 
-  // Переключение статуса
   const toggleSaveOffer = useCallback(
     async (offerId) => {
-      const result = await dispatch(toggleSaved(offerId));
-      return result;
+      return await dispatch(toggleSaved(offerId));
     },
     [dispatch],
   );
 
-  // Получение сохраненных объявлений из списка всех
   const getSavedOffers = useCallback(
     (allOffers) => {
       return allOffers.filter((offer) => savedIds.includes(offer.id));
     },
     [savedIds],
   );
+
+  const migrateSaved = useCallback(async () => {
+    return await dispatch(migrateSavedOffers());
+  }, [dispatch]);
 
   return {
     savedIds,
@@ -72,6 +73,8 @@ const useSavedViewModel = () => {
     unsaveOffer,
     toggleSaveOffer,
     getSavedOffers,
+    migrateSaved,
+    clearState: () => dispatch(clearSavedState()), // Только для очистки Redux состояния
   };
 };
 

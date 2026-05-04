@@ -40,6 +40,9 @@ export default {
     noOffers: "No saved offers",
     offlineNoData: "No internet and no saved offers",
     noKufarOffers: "No offers from Kufar",
+    localOffers: "Local",
+    myOffers: "Mine",
+    othersOffers: "Others",
     sort: {
       dateDesc: "Newest first",
       priceAsc: "Cheapest first",

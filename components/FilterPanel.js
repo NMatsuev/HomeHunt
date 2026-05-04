@@ -17,10 +17,19 @@ export const FilterPanel = ({
   onReset,
   sortOptions,
   currentSortLabel,
+  authorFilter,
+  onAuthorFilterChange,
+  AUTHOR_FILTERS,
+  myOffersCount,
+  othersOffersCount,
+  activeTab,
   t,
   themeColors,
 }) => {
   const styles = createStyles(themeColors);
+
+  // Показываем фильтр по автору только для локальных объявлений
+  const showAuthorFilter = activeTab === "local";
 
   return (
     <View style={styles.filtersPanel}>
@@ -41,6 +50,35 @@ export const FilterPanel = ({
             🚪 {roomsFilter ? roomsFilter : t("mainScreen.allRooms")}
           </Text>
         </TouchableOpacity>
+
+        {showAuthorFilter && (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                authorFilter === AUTHOR_FILTERS.MY && styles.activeFilterChip,
+              ]}
+              onPress={() => onAuthorFilterChange(AUTHOR_FILTERS.MY)}
+            >
+              <Text style={styles.filterChipText}>
+                👤 {t("mainScreen.myOffers")} ({myOffersCount})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                authorFilter === AUTHOR_FILTERS.OTHERS &&
+                  styles.activeFilterChip,
+              ]}
+              onPress={() => onAuthorFilterChange(AUTHOR_FILTERS.OTHERS)}
+            >
+              <Text style={styles.filterChipText}>
+                👥 {t("mainScreen.othersOffers")} ({othersOffersCount})
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         <TouchableOpacity
           style={[styles.filterChip, styles.resetChip]}
@@ -67,6 +105,11 @@ const createStyles = (colors) =>
       borderRadius: 16,
       backgroundColor: colors.inputBackground,
       marginHorizontal: 4,
+    },
+    activeFilterChip: {
+      backgroundColor: colors.primary + "30",
+      borderWidth: 1,
+      borderColor: colors.primary,
     },
     resetChip: {
       backgroundColor: colors.error + "20",

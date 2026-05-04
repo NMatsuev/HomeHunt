@@ -1,4 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
+import { getAuth } from "firebase/auth";
+import { app } from "../services/firestoreWebService";
 
 // Функция нечеткого поиска (Levenshtein distance)
 const levenshteinDistance = (a, b) => {
@@ -53,11 +55,23 @@ const fuzzySearch = (text, query) => {
   return false;
 };
 
+// Типы фильтрации по автору
+export const AUTHOR_FILTERS = {
+  ALL: "all",
+  MY: "my",
+  OTHERS: "others",
+};
+
 export const useFilterAndSort = (items, activeTab) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("date_desc");
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [roomsFilter, setRoomsFilter] = useState("");
+  const [authorFilter, setAuthorFilter] = useState(AUTHOR_FILTERS.ALL);
+
+  // Получаем текущего пользователя
+  const auth = getAuth(app);
+  const currentUserId = auth.currentUser?.uid;
 
   const filterAndSearchOffers = useCallback(
     (data) => {
@@ -65,6 +79,7 @@ export const useFilterAndSort = (items, activeTab) => {
 
       let filtered = [...data];
 
+      // Поиск по тексту
       if (searchQuery.trim()) {
         filtered = filtered.filter(
           (item) =>
@@ -74,6 +89,7 @@ export const useFilterAndSort = (items, activeTab) => {
         );
       }
 
+      // Фильтр по цене
       if (priceRange.min) {
         const minPrice = parseInt(priceRange.min);
         filtered = filtered.filter((item) => {
@@ -90,15 +106,38 @@ export const useFilterAndSort = (items, activeTab) => {
         });
       }
 
+      // Фильтр по комнатам
       if (roomsFilter) {
         filtered = filtered.filter(
           (item) => item.rooms === parseInt(roomsFilter),
         );
       }
 
+      // Фильтр по автору (только для локальных объявлений)
+      if (activeTab === "local" && authorFilter !== AUTHOR_FILTERS.ALL) {
+        filtered = filtered.filter((item) => {
+          const itemAuthorId = item.authorId;
+
+          if (authorFilter === AUTHOR_FILTERS.MY) {
+            return itemAuthorId && itemAuthorId === currentUserId;
+          } else if (authorFilter === AUTHOR_FILTERS.OTHERS) {
+            return !itemAuthorId || itemAuthorId !== currentUserId;
+          }
+          return true;
+        });
+      }
+
       return filtered;
     },
-    [searchQuery, priceRange.min, priceRange.max, roomsFilter],
+    [
+      searchQuery,
+      priceRange.min,
+      priceRange.max,
+      roomsFilter,
+      activeTab,
+      authorFilter,
+      currentUserId,
+    ],
   );
 
   const sortOffers = useCallback(
@@ -152,7 +191,28 @@ export const useFilterAndSort = (items, activeTab) => {
     setPriceRange({ min: "", max: "" });
     setRoomsFilter("");
     setSortBy("date_desc");
+    setAuthorFilter(AUTHOR_FILTERS.ALL);
   }, []);
+
+  // Получение количества моих объявлений
+  const getMyOffersCount = useCallback(
+    (data) => {
+      if (!data || data.length === 0) return 0;
+      if (!currentUserId) return 0;
+      return data.filter((item) => item.authorId === currentUserId).length;
+    },
+    [currentUserId],
+  );
+
+  // Получение количества чужих объявлений
+  const getOthersOffersCount = useCallback(
+    (data) => {
+      if (!data || data.length === 0) return 0;
+      if (!currentUserId) return data.length;
+      return data.filter((item) => item.authorId !== currentUserId).length;
+    },
+    [currentUserId],
+  );
 
   return {
     searchQuery,
@@ -163,7 +223,12 @@ export const useFilterAndSort = (items, activeTab) => {
     setPriceRange,
     roomsFilter,
     setRoomsFilter,
+    authorFilter,
+    setAuthorFilter,
     processedData,
     resetFilters,
+    getMyOffersCount,
+    getOthersOffersCount,
+    AUTHOR_FILTERS,
   };
 };

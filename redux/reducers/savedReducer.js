@@ -4,6 +4,7 @@ import {
   SAVED_ADD,
   SAVED_REMOVE,
   SAVED_ERROR,
+  SAVED_CLEAR_STATE,
 } from "../actions/savedActions";
 
 const initialState = {
@@ -41,6 +42,14 @@ const savedReducer = (state = initialState, action) => {
         ...state,
         savedIds: state.savedIds.filter((id) => id !== action.payload),
         isLoading: false,
+      };
+
+    case SAVED_CLEAR_STATE:
+      return {
+        ...state,
+        savedIds: [],
+        isLoading: false,
+        error: null,
       };
 
     case SAVED_ERROR:

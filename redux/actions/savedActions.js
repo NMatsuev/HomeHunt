@@ -5,8 +5,9 @@ export const SAVED_LOADED = "SAVED_LOADED";
 export const SAVED_ADD = "SAVED_ADD";
 export const SAVED_REMOVE = "SAVED_REMOVE";
 export const SAVED_ERROR = "SAVED_ERROR";
+export const SAVED_CLEAR_STATE = "SAVED_CLEAR_STATE"; // Переименовано
 
-// Загрузка сохраненных ID
+// Загрузка сохраненных ID (с учетом пользователя)
 export const loadSavedIds = () => async (dispatch) => {
   try {
     dispatch({ type: SAVED_LOADING });
@@ -63,6 +64,25 @@ export const toggleSaved = (offerId) => async (dispatch, getState) => {
     return result;
   } catch (error) {
     dispatch({ type: SAVED_ERROR, payload: error.message });
+    return { success: false, error: error.message };
+  }
+};
+
+// Очистка ТОЛЬКО Redux состояния (не AsyncStorage)
+export const clearSavedState = () => (dispatch) => {
+  dispatch({ type: SAVED_CLEAR_STATE });
+};
+
+// Миграция данных (при первом входе)
+export const migrateSavedOffers = () => async (dispatch) => {
+  try {
+    const result = await savedOffersService.migrateFromDeviceToUser();
+    if (result.success) {
+      await dispatch(loadSavedIds());
+    }
+    return result;
+  } catch (error) {
+    console.error("Error migrating saved offers:", error);
     return { success: false, error: error.message };
   }
 };

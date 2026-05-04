@@ -36,15 +36,23 @@
           ]
         }
       ],
-      ["expo-notifications",
+      [
+        "expo-notifications",
         {
           "icon": "./assets/logo.png",
           "color": "#ffffff"
-        }],
+        }
+      ],
       "expo-secure-store",
       "expo-sqlite",
       "@react-native-firebase/app",
-      "@react-native-community/datetimepicker"
-    ]
+      "@react-native-community/datetimepicker",
+      "@react-native-firebase/auth"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3383eb64-1c45-499c-87ae-d2e9a9d0453c"
+      }
+    }
   }
 }

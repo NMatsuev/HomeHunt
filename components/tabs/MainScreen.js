@@ -64,10 +64,17 @@ export default function MainScreen() {
     setPriceRange,
     roomsFilter,
     setRoomsFilter,
+    authorFilter,
+    setAuthorFilter,
     processedData,
     resetFilters,
+    getMyOffersCount,
+    getOthersOffersCount,
+    AUTHOR_FILTERS,
   } = useFilterAndSort(currentData, activeTab);
 
+  const myOffersCount = getMyOffersCount(currentData);
+  const othersOffersCount = getOthersOffersCount(currentData);
   const sortOptionsList = sortOptions(t);
   const currentSortLabel =
     sortOptionsList.find((opt) => opt.key === sortBy)?.label ||
@@ -232,6 +239,12 @@ export default function MainScreen() {
             onReset={resetFilters}
             sortOptions={sortOptionsList}
             currentSortLabel={currentSortLabel}
+            authorFilter={authorFilter}
+            onAuthorFilterChange={setAuthorFilter}
+            AUTHOR_FILTERS={AUTHOR_FILTERS}
+            myOffersCount={myOffersCount}
+            othersOffersCount={othersOffersCount}
+            activeTab={activeTab}
             t={t}
             themeColors={themeColors}
           />
@@ -257,7 +270,7 @@ export default function MainScreen() {
                 },
               ]}
             >
-              {t("mainScreen.myOffers")}
+              {t("mainScreen.localOffers")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
