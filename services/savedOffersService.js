@@ -1,11 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getAuth } from "firebase/auth";
-import { app } from "./firestoreWebService";
+import { auth } from "./firestoreWebService";
 import { SAVED_OFFERS_KEY_PREFIX } from "../config/StorageConfig";
 
 class SavedOffersService {
   constructor() {
-    this.auth = getAuth(app);
+    this.auth = auth;
   }
 
   // Получение текущего userId

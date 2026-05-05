@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { getAuth } from "firebase/auth";
+import { auth } from "../services/firestoreWebService";
 import { app } from "../services/firestoreWebService";
 
 // Функция нечеткого поиска (Levenshtein distance)
@@ -74,7 +74,6 @@ export const useFilterAndSort = (items, activeTab) => {
   const [authorFilter, setAuthorFilter] = useState(AUTHOR_FILTERS.ALL);
 
   // Получаем текущего пользователя
-  const auth = getAuth(app);
   const currentUserId = auth.currentUser?.uid;
 
   const filterAndSearchOffers = useCallback(

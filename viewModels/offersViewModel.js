@@ -41,7 +41,6 @@ const useOffersViewModel = () => {
     return dispatch(initializeDatabase());
   }, [dispatch]);
 
-  // Ручная подписка (обычно не нужна, так как initDatabase уже подписывается)
   const subscribe = useCallback(() => {
     return dispatch(subscribeToOffers());
   }, [dispatch]);

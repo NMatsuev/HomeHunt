@@ -13,13 +13,33 @@ import {
   Timestamp,
   onSnapshot,
 } from "firebase/firestore";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { FIREBASE_CONFIG, COLLECTION_NAME } from "../config/StorageConfig";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+
+const persistence = getReactNativePersistence(ReactNativeAsyncStorage);
 
 // Инициализация Firebase
 export const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
+export const auth = initializeAuth(app, {
+  persistence,
+});
 
 class FirestoreWebService {
+  // Получение текущего пользователя
+  getCurrentUser() {
+    const user = auth.currentUser;
+    if (user) {
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || user.email?.split("@")[0] || "Аноним",
+      };
+    }
+    return null;
+  }
+
   async initDatabase() {
     try {
       console.log("Firestore initializing...");
